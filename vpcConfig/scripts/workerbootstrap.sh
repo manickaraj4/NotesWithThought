@@ -40,10 +40,4 @@ EOF
 sudo systemctl enable --now docker
 
 sudo systemctl enable kubelet
-sudo kubeadm init
-
-mkdir -p /home/ec2-user/.kube
-sudo cp -i /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
-sudo chown 1000:1000 /home/ec2-user/.kube/config
-
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.1/manifests/tigera-operator.yaml
+sudo kubeadm join 172.31.37.249:6443 --token 5cds2w.yas9jwuif2fai4cv --discovery-token-ca-cert-hash sha256:a7624757076fefb2508f09eb5c5e6ca039194df88afed20edbead174a9ef88dc

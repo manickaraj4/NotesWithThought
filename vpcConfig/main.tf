@@ -19,6 +19,20 @@ resource "aws_instance" "master_server" {
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
   user_data              = file("${path.module}/scripts/masterbootstrap.sh")
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
+
+  tags = {
+    Name = "TerraformManaged"
+  }
+}
+
+resource "aws_instance" "worker_node" {
+  ami                    = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  instance_type          = "t3.small"
+  key_name               = aws_key_pair.deployer.id
+  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  user_data              = file("${path.module}/scripts/workerbootstrap.sh")
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
   tags = {
     Name = "TerraformManaged"
@@ -51,6 +65,31 @@ resource "aws_key_pair" "deployer" {
   public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGW9uO5m+sTquPQV6CsaQRZ+JhqmAAxArvluSRs5FINQ manickaraj.km@LT8649"
 }
 
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2_instance_profile"
+  role = aws_iam_role.ec2_instance_role.name
+}
+
+resource "aws_iam_role" "ec2_instance_role" {
+  name = "ec2_instance_role"
+  path = "/"
+  assume_role_policy = file("${path.module}/scripts/assumeroleec2policy.json")
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy_attach" {
+  role       = aws_iam_role.ec2_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_policy_attach" {
+  role       = aws_iam_role.ec2_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 output "master_node_public_address" {
   value = aws_instance.master_server.public_dns
+}
+
+output "worker_node_public_address" {
+  value = aws_instance.worker_node.public_dns
 }
