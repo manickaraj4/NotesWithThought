@@ -61,6 +61,17 @@ resource "aws_instance" "worker_node" {
   }
 }
 
+resource "aws_instance" "bastion_node" {
+  ami                    = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.deployer.id
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
+  disable_api_termination = true
+  tags = {
+    Name = "TerraformManaged"
+  }
+}
+
 resource "aws_security_group" "allow_ssh" {
   egress {
     from_port   = 0
