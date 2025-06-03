@@ -51,3 +51,5 @@ sleep 10
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/refs/heads/master/manifests/calico.yaml
 
 aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ap-south-1 
+
+aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/kubeconfig
