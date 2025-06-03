@@ -13,11 +13,32 @@ provider "aws" {
   region = "ap-south-1"
 }
 
+data "aws_caller_identity" "current" {}
+
+resource "null_resource" "wait_for_resource" {
+  provisioner "local-exec" {
+    command = "sleep 30"
+  }
+}
+
+resource "aws_security_group" "allow_all_tcp_between_nodes" {
+  name = "allow_cross_node_communication"
+  tags = {
+    Name = "TerraformManaged"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_cross_node_communication" {
+  security_group_id            = aws_security_group.allow_all_tcp_between_nodes.id
+  ip_protocol                  = "-1"
+  referenced_security_group_id = aws_security_group.allow_all_tcp_between_nodes.id
+}
+
 resource "aws_instance" "master_server" {
   ami                    = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
   instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.id
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
   user_data              = file("${path.module}/scripts/masterbootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
@@ -27,10 +48,11 @@ resource "aws_instance" "master_server" {
 }
 
 resource "aws_instance" "worker_node" {
+  depends_on             = [null_resource.wait_for_resource, aws_instance.master_server]
   ami                    = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
   instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.id
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
   user_data              = file("${path.module}/scripts/workerbootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
@@ -71,8 +93,8 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 }
 
 resource "aws_iam_role" "ec2_instance_role" {
-  name = "ec2_instance_role"
-  path = "/"
+  name               = "ec2_instance_role"
+  path               = "/"
   assume_role_policy = file("${path.module}/scripts/assumeroleec2policy.json")
 }
 
@@ -84,6 +106,37 @@ resource "aws_iam_role_policy_attachment" "cni_policy_attach" {
 resource "aws_iam_role_policy_attachment" "ecr_policy_attach" {
   role       = aws_iam_role.ec2_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_role_policy" "ssm_policy" {
+  name = "ssm_policy"
+  role = aws_iam_role.ec2_instance_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ssm:GetParameter",
+          "ssm:PutParameter"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:ssm:ap-south-1:${data.aws_caller_identity.current.account_id}:parameter/kube_join_command"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "kms:Decrypt",
+          "kms:DescribeKey",
+          "kms:ReEncrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey",
+          "kms:CreateGrant"
+        ],
+        "Resource" : "arn:aws:kms:ap-south-1:${data.aws_caller_identity.current.account_id}:key/e9dff97e-31dd-4c66-a0ab-d561c610e5be"
+      }
+    ]
+  })
 }
 
 output "master_node_public_address" {

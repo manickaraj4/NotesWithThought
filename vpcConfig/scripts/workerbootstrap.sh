@@ -40,4 +40,5 @@ EOF
 sudo systemctl enable --now docker
 
 sudo systemctl enable kubelet
-sudo kubeadm join 172.31.37.249:6443 --token 5cds2w.yas9jwuif2fai4cv --discovery-token-ca-cert-hash sha256:a7624757076fefb2508f09eb5c5e6ca039194df88afed20edbead174a9ef88dc
+
+sudo `aws ssm get-parameter --name kube_join_command --with-decryption --region ap-south-1 | jq -r ".Parameter.Value"`

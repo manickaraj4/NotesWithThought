@@ -46,4 +46,8 @@ mkdir -p /home/ec2-user/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
 sudo chown 1000:1000 /home/ec2-user/.kube/config
 
+sleep 10
+
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/refs/heads/master/manifests/calico.yaml
+
+aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ap-south-1 
