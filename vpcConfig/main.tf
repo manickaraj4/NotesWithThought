@@ -142,12 +142,18 @@ resource "aws_lb_target_group" "master_tg" {
   port     = 8443
   protocol = "HTTPS"
   vpc_id   = aws_default_vpc.default_vpc.id
+  health_check {
+    path = "/livez"
+    port = 6443
+    protocol = "HTTPS"
+    matcher = "200,202"
+  }
 }
 
 resource "aws_lb_target_group_attachment" "master_tg_attachment" {
   target_group_arn = aws_lb_target_group.master_tg.arn
   target_id        = aws_instance.master_server.id
-  port             = 8443
+  port             = 6443
 }
 
 resource "null_resource" "wait_for_resource" {

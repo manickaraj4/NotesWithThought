@@ -46,10 +46,17 @@ mkdir -p /home/ec2-user/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
 sudo chown 1000:1000 /home/ec2-user/.kube/config
 
+sudo cat /etc/kubernetes/admin.conf | grep client-key-data | cut -d ":" -f 2 | cut -d " " -f 2 | base64 -d > /home/ec2-user/.kube/client-key.pem
+sudo cat /etc/kubernetes/admin.conf | grep client-certificate-data | cut -d ":" -f 2 | cut -d " " -f 2 | base64 -d > /home/ec2-user/.kube/client-cert.pem
+sudo cat /etc/kubernetes/admin.conf | grep certificate-authority-data | cut -d ":" -f 2 | cut -d " " -f 2 | base64 -d > /home/ec2-user/.kube/cluster-ca-cert.pem
+
 sleep 10
 
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/refs/heads/master/manifests/calico.yaml
+#kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/refs/heads/master/manifests/calico.yaml
 
 aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ap-south-1 
 
 aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/kubeconfig
+aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/client-key.pem
+aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/client-cert.pem
+aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/cluster-ca-cert.pem
