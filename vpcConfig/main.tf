@@ -15,6 +15,33 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
+
+resource "tls_private_key" "lb-cert-key" {
+  algorithm = "RSA"
+}
+
+resource "tls_self_signed_cert" "lb_self_cert" {
+  private_key_pem = tls_private_key.lb-cert-key.private_key_pem
+
+  subject {
+    common_name  = "masterlb-985247139.ap-south-1.elb.amazonaws.com"
+    organization = "Sample Corp"
+  }
+
+  validity_period_hours = 8760
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+  ]
+}
+
+resource "aws_acm_certificate" "lb_cert" {
+  private_key      = tls_private_key.lb-cert-key.private_key_pem
+  certificate_body = tls_self_signed_cert.lb_self_cert.cert_pem
+}
+
 resource "aws_default_vpc" "default_vpc" {
   tags = {
     Name = "TerraformManaged"
@@ -71,7 +98,7 @@ resource "aws_lb" "master_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [ aws_default_subnet.default_1a.id, aws_default_subnet.default_1b.id, aws_default_subnet.default_1c.id ]
+  subnets            = [aws_default_subnet.default_1a.id, aws_default_subnet.default_1b.id, aws_default_subnet.default_1c.id]
 
   tags = {
     Name = "TerraformManaged"
@@ -83,6 +110,7 @@ resource "aws_lb_listener" "master_listener" {
   port              = "8443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.lb_cert.arn
 
   default_action {
     type             = "forward"
@@ -124,12 +152,19 @@ resource "aws_lb_target_group_attachment" "master_tg_attachment" {
 
 resource "null_resource" "wait_for_resource" {
   provisioner "local-exec" {
-    command = "sleep 60"
+    command = "sleep 150"
   }
 }
 
 resource "aws_security_group" "allow_all_tcp_between_nodes" {
   name = "allow_cross_node_communication"
+  tags = {
+    Name = "TerraformManaged"
+  }
+}
+
+resource "aws_security_group" "allow_all_from_lb" {
+  name = "allow_all_from_lb"
   tags = {
     Name = "TerraformManaged"
   }
@@ -141,16 +176,23 @@ resource "aws_vpc_security_group_ingress_rule" "allow_cross_node_communication" 
   referenced_security_group_id = aws_security_group.allow_all_tcp_between_nodes.id
 }
 
+resource "aws_vpc_security_group_ingress_rule" "allow_lb_sg" {
+  security_group_id            = aws_security_group.allow_all_from_lb.id
+  ip_protocol                  = "-1"
+  referenced_security_group_id = aws_security_group.alb_sg.id
+}
+
 resource "aws_instance" "master_server" {
   ami                    = "ami-0f535a71b34f2d44a"
   instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.id
-  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id, aws_security_group.allow_all_from_lb.id]
   user_data              = file("${path.module}/scripts/masterbootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
   tags = {
-    Name = "TerraformManaged"
+    Name      = "masterServer",
+    ManagedBy = "Terraform"
   }
 }
 
@@ -164,7 +206,8 @@ resource "aws_instance" "worker_node" {
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
   tags = {
-    Name = "TerraformManaged"
+    Name      = "workerNode",
+    ManagedBy = "Terraform"
   }
 }
 
@@ -256,9 +299,9 @@ resource "aws_iam_role_policy" "ssm_policy" {
         "Resource" : "arn:aws:kms:ap-south-1:${data.aws_caller_identity.current.account_id}:key/e9dff97e-31dd-4c66-a0ab-d561c610e5be"
       },
       {
-        "Effect": "Allow",
-        "Action": "s3:PutObject",
-        "Resource": "arn:aws:s3:::samplebucketfortesting12345/KubeConfig/*" 
+        "Effect" : "Allow",
+        "Action" : "s3:PutObject",
+        "Resource" : "arn:aws:s3:::samplebucketfortesting12345/KubeConfig/*"
       }
     ]
   })
