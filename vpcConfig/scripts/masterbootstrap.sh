@@ -56,7 +56,8 @@ sleep 10
 
 aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ap-south-1 
 
-aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/kubeconfig
-aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/client-key.pem
-aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/client-cert.pem
-aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/cluster-ca-cert.pem
+aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/kubeconfig --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/client-key.pem s3://samplebucketfortesting12345/KubeConfig/client-key.pem --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/client-cert.pem s3://samplebucketfortesting12345/KubeConfig/client-cert.pem --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/cluster-ca-cert.pem s3://samplebucketfortesting12345/KubeConfig/cluster-ca-cert.pem --content-type="text/*"
+sudo aws s3 cp /etc/kubernetes/pki/ca.key s3://samplebucketfortesting12345/KubeConfig/cluster-ca-key.pem --content-type="text/*"

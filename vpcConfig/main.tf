@@ -15,7 +15,17 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
+data "aws_s3_object" "kube_ca_cert" {
+  bucket = "samplebucketfortesting12345"
+  key    = "KubeConfig/cluster-ca-cert.pem"
+}
 
+data "aws_s3_object" "kube_ca_key" {
+  bucket = "samplebucketfortesting12345"
+  key    = "KubeConfig/cluster-ca-key.pem"
+}
+
+/*
 resource "tls_private_key" "lb-cert-key" {
   algorithm = "RSA"
 }
@@ -36,10 +46,13 @@ resource "tls_self_signed_cert" "lb_self_cert" {
     "server_auth",
   ]
 }
+*/
 
-resource "aws_acm_certificate" "lb_cert" {
-  private_key      = tls_private_key.lb-cert-key.private_key_pem
-  certificate_body = tls_self_signed_cert.lb_self_cert.cert_pem
+resource "aws_acm_certificate" "lb_cert_new" {
+  /* private_key      = tls_private_key.lb-cert-key.private_key_pem
+  certificate_body = tls_self_signed_cert.lb_self_cert.cert_pem */
+  private_key      = data.aws_s3_object.kube_ca_key.body
+  certificate_body = data.aws_s3_object.kube_ca_cert.body
 }
 
 resource "aws_default_vpc" "default_vpc" {
@@ -94,6 +107,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_kube_master_ports" {
 }
 
 resource "aws_lb" "master_lb" {
+  depends_on         = [null_resource.wait_for_resource, aws_instance.master_server]
   name               = "masterlb"
   internal           = false
   load_balancer_type = "application"
@@ -110,7 +124,7 @@ resource "aws_lb_listener" "master_listener" {
   port              = "8443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.lb_cert.arn
+  certificate_arn   = aws_acm_certificate.lb_cert_new.arn
 
   default_action {
     type             = "forward"
@@ -143,10 +157,10 @@ resource "aws_lb_target_group" "master_tg" {
   protocol = "HTTPS"
   vpc_id   = aws_default_vpc.default_vpc.id
   health_check {
-    path = "/livez"
-    port = 6443
+    path     = "/livez"
+    port     = 6443
     protocol = "HTTPS"
-    matcher = "200,202"
+    matcher  = "200,202"
   }
 }
 
@@ -158,7 +172,7 @@ resource "aws_lb_target_group_attachment" "master_tg_attachment" {
 
 resource "null_resource" "wait_for_resource" {
   provisioner "local-exec" {
-    command = "sleep 150"
+    command = "sleep 250"
   }
 }
 

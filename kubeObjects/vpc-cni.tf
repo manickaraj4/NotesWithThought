@@ -1,19 +1,19 @@
 resource "kubernetes_manifest" "customresourcedefinition_eniconfigs_crd_k8s_amazonaws_com" {
   manifest = {
     "apiVersion" = "apiextensions.k8s.io/v1"
-    "kind" = "CustomResourceDefinition"
+    "kind"       = "CustomResourceDefinition"
     "metadata" = {
       "name" = "eniconfigs.crd.k8s.amazonaws.com"
     }
     "spec" = {
       "group" = "crd.k8s.amazonaws.com"
       "names" = {
-        "kind" = "ENIConfig"
-        "plural" = "eniconfigs"
+        "kind"     = "ENIConfig"
+        "plural"   = "eniconfigs"
         "singular" = "eniconfig"
       }
       "preserveUnknownFields" = false
-      "scope" = "Cluster"
+      "scope"                 = "Cluster"
       "versions" = [
         {
           "name" = "v1alpha1"
@@ -28,7 +28,7 @@ resource "kubernetes_manifest" "customresourcedefinition_eniconfigs_crd_k8s_amaz
                   may reject unrecognized values.
                   More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
                   EOT
-                  "type" = "string"
+                  "type"        = "string"
                 }
                 "kind" = {
                   "description" = <<-EOT
@@ -38,7 +38,7 @@ resource "kubernetes_manifest" "customresourcedefinition_eniconfigs_crd_k8s_amaz
                   In CamelCase.
                   More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
                   EOT
-                  "type" = "string"
+                  "type"        = "string"
                 }
                 "metadata" = {
                   "type" = "object"
@@ -63,14 +63,14 @@ resource "kubernetes_manifest" "customresourcedefinition_eniconfigs_crd_k8s_amaz
                 }
                 "status" = {
                   "description" = "ENIConfigStatus defines the observed state of ENIConfig"
-                  "type" = "object"
+                  "type"        = "object"
                 }
               }
-              "type" = "object"
+              "type"                                 = "object"
               "x-kubernetes-preserve-unknown-fields" = true
             }
           }
-          "served" = true
+          "served"  = true
           "storage" = true
         },
       ]
@@ -81,7 +81,7 @@ resource "kubernetes_manifest" "customresourcedefinition_eniconfigs_crd_k8s_amaz
 resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_networking_k8s_aws" {
   manifest = {
     "apiVersion" = "apiextensions.k8s.io/v1"
-    "kind" = "CustomResourceDefinition"
+    "kind"       = "CustomResourceDefinition"
     "metadata" = {
       "annotations" = {
         "controller-gen.kubebuilder.io/version" = "v0.11.3"
@@ -95,9 +95,9 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
     "spec" = {
       "group" = "networking.k8s.aws"
       "names" = {
-        "kind" = "PolicyEndpoint"
+        "kind"     = "PolicyEndpoint"
         "listKind" = "PolicyEndpointList"
-        "plural" = "policyendpoints"
+        "plural"   = "policyendpoints"
         "singular" = "policyendpoint"
       }
       "scope" = "Namespaced"
@@ -110,11 +110,11 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
               "properties" = {
                 "apiVersion" = {
                   "description" = "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
-                  "type" = "string"
+                  "type"        = "string"
                 }
                 "kind" = {
                   "description" = "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
-                  "type" = "string"
+                  "type"        = "string"
                 }
                 "metadata" = {
                   "type" = "object"
@@ -129,7 +129,7 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                         "properties" = {
                           "cidr" = {
                             "description" = "CIDR is the network address(s) of the endpoint"
-                            "type" = "string"
+                            "type"        = "string"
                           }
                           "except" = {
                             "description" = "Except is the exceptions to the CIDR ranges mentioned above."
@@ -145,18 +145,18 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                               "properties" = {
                                 "endPort" = {
                                   "description" = "Endport specifies the port range port to endPort port must be defined and an integer, endPort > port"
-                                  "format" = "int32"
-                                  "type" = "integer"
+                                  "format"      = "int32"
+                                  "type"        = "integer"
                                 }
                                 "port" = {
                                   "description" = "Port specifies the numerical port for the protocol. If empty applies to all ports"
-                                  "format" = "int32"
-                                  "type" = "integer"
+                                  "format"      = "int32"
+                                  "type"        = "integer"
                                 }
                                 "protocol" = {
-                                  "default" = "TCP"
+                                  "default"     = "TCP"
                                   "description" = "Protocol specifies the transport protocol, default TCP"
-                                  "type" = "string"
+                                  "type"        = "string"
                                 }
                               }
                               "type" = "object"
@@ -178,7 +178,7 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                         "properties" = {
                           "cidr" = {
                             "description" = "CIDR is the network address(s) of the endpoint"
-                            "type" = "string"
+                            "type"        = "string"
                           }
                           "except" = {
                             "description" = "Except is the exceptions to the CIDR ranges mentioned above."
@@ -194,18 +194,18 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                               "properties" = {
                                 "endPort" = {
                                   "description" = "Endport specifies the port range port to endPort port must be defined and an integer, endPort > port"
-                                  "format" = "int32"
-                                  "type" = "integer"
+                                  "format"      = "int32"
+                                  "type"        = "integer"
                                 }
                                 "port" = {
                                   "description" = "Port specifies the numerical port for the protocol. If empty applies to all ports"
-                                  "format" = "int32"
-                                  "type" = "integer"
+                                  "format"      = "int32"
+                                  "type"        = "integer"
                                 }
                                 "protocol" = {
-                                  "default" = "TCP"
+                                  "default"     = "TCP"
                                   "description" = "Protocol specifies the transport protocol, default TCP"
-                                  "type" = "string"
+                                  "type"        = "string"
                                 }
                               }
                               "type" = "object"
@@ -224,7 +224,7 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                       "description" = "PodIsolation specifies whether the pod needs to be isolated for a particular traffic direction Ingress or Egress, or both. If default isolation is not specified, and there are no ingress/egress rules, then the pod is not isolated from the point of view of this policy. This follows the NetworkPolicy spec.PolicyTypes."
                       "items" = {
                         "description" = "PolicyType string describes the NetworkPolicy type This type is beta-level in 1.8"
-                        "type" = "string"
+                        "type"        = "string"
                       }
                       "type" = "array"
                     }
@@ -238,11 +238,11 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                             "properties" = {
                               "key" = {
                                 "description" = "key is the label key that the selector applies to."
-                                "type" = "string"
+                                "type"        = "string"
                               }
                               "operator" = {
                                 "description" = "operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist."
-                                "type" = "string"
+                                "type"        = "string"
                               }
                               "values" = {
                                 "description" = "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch."
@@ -265,10 +265,10 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                             "type" = "string"
                           }
                           "description" = "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed."
-                          "type" = "object"
+                          "type"        = "object"
                         }
                       }
-                      "type" = "object"
+                      "type"                  = "object"
                       "x-kubernetes-map-type" = "atomic"
                     }
                     "podSelectorEndpoints" = {
@@ -278,19 +278,19 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                         "properties" = {
                           "hostIP" = {
                             "description" = "HostIP is the IP address of the host the pod is currently running on"
-                            "type" = "string"
+                            "type"        = "string"
                           }
                           "name" = {
                             "description" = "Name is the pod name"
-                            "type" = "string"
+                            "type"        = "string"
                           }
                           "namespace" = {
                             "description" = "Namespace is the pod namespace"
-                            "type" = "string"
+                            "type"        = "string"
                           }
                           "podIP" = {
                             "description" = "PodIP is the IP address of the pod"
-                            "type" = "string"
+                            "type"        = "string"
                           }
                         }
                         "required" = [
@@ -308,11 +308,11 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                       "properties" = {
                         "name" = {
                           "description" = "Name is the name of the Policy"
-                          "type" = "string"
+                          "type"        = "string"
                         }
                         "namespace" = {
                           "description" = "Namespace is the namespace of the Policy"
-                          "type" = "string"
+                          "type"        = "string"
                         }
                       }
                       "required" = [
@@ -329,13 +329,13 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
                 }
                 "status" = {
                   "description" = "PolicyEndpointStatus defines the observed state of PolicyEndpoint"
-                  "type" = "object"
+                  "type"        = "object"
                 }
               }
               "type" = "object"
             }
           }
-          "served" = true
+          "served"  = true
           "storage" = true
           "subresources" = {
             "status" = {}
@@ -349,15 +349,15 @@ resource "kubernetes_manifest" "customresourcedefinition_policyendpoints_network
 resource "kubernetes_manifest" "serviceaccount_kube_system_aws_node" {
   manifest = {
     "apiVersion" = "v1"
-    "kind" = "ServiceAccount"
+    "kind"       = "ServiceAccount"
     "metadata" = {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
-        "app.kubernetes.io/name" = "aws-node"
-        "app.kubernetes.io/version" = "v1.19.0"
-        "k8s-app" = "aws-node"
+        "app.kubernetes.io/name"     = "aws-node"
+        "app.kubernetes.io/version"  = "v1.19.0"
+        "k8s-app"                    = "aws-node"
       }
-      "name" = "aws-node"
+      "name"      = "aws-node"
       "namespace" = "kube-system"
     }
   }
@@ -367,23 +367,23 @@ resource "kubernetes_manifest" "configmap_kube_system_amazon_vpc_cni" {
   manifest = {
     "apiVersion" = "v1"
     "data" = {
-      "branch-eni-cooldown" = "60"
+      "branch-eni-cooldown"              = "60"
       "enable-network-policy-controller" = "false"
-      "enable-windows-ipam" = "false"
+      "enable-windows-ipam"              = "false"
       "enable-windows-prefix-delegation" = "false"
-      "minimum-ip-target" = "3"
-      "warm-ip-target" = "1"
-      "warm-prefix-target" = "0"
+      "minimum-ip-target"                = "3"
+      "warm-ip-target"                   = "1"
+      "warm-prefix-target"               = "0"
     }
     "kind" = "ConfigMap"
     "metadata" = {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
-        "app.kubernetes.io/name" = "aws-node"
-        "app.kubernetes.io/version" = "v1.19.0"
-        "k8s-app" = "aws-node"
+        "app.kubernetes.io/name"     = "aws-node"
+        "app.kubernetes.io/version"  = "v1.19.0"
+        "k8s-app"                    = "aws-node"
       }
-      "name" = "amazon-vpc-cni"
+      "name"      = "amazon-vpc-cni"
       "namespace" = "kube-system"
     }
   }
@@ -392,13 +392,13 @@ resource "kubernetes_manifest" "configmap_kube_system_amazon_vpc_cni" {
 resource "kubernetes_manifest" "clusterrole_aws_node" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "ClusterRole"
+    "kind"       = "ClusterRole"
     "metadata" = {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
-        "app.kubernetes.io/name" = "aws-node"
-        "app.kubernetes.io/version" = "v1.19.0"
-        "k8s-app" = "aws-node"
+        "app.kubernetes.io/name"     = "aws-node"
+        "app.kubernetes.io/version"  = "v1.19.0"
+        "k8s-app"                    = "aws-node"
       }
       "name" = "aws-node"
     }
@@ -514,25 +514,25 @@ resource "kubernetes_manifest" "clusterrole_aws_node" {
 resource "kubernetes_manifest" "clusterrolebinding_aws_node" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "ClusterRoleBinding"
+    "kind"       = "ClusterRoleBinding"
     "metadata" = {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
-        "app.kubernetes.io/name" = "aws-node"
-        "app.kubernetes.io/version" = "v1.19.0"
-        "k8s-app" = "aws-node"
+        "app.kubernetes.io/name"     = "aws-node"
+        "app.kubernetes.io/version"  = "v1.19.0"
+        "k8s-app"                    = "aws-node"
       }
       "name" = "aws-node"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
-      "kind" = "ClusterRole"
-      "name" = "aws-node"
+      "kind"     = "ClusterRole"
+      "name"     = "aws-node"
     }
     "subjects" = [
       {
-        "kind" = "ServiceAccount"
-        "name" = "aws-node"
+        "kind"      = "ServiceAccount"
+        "name"      = "aws-node"
         "namespace" = "kube-system"
       },
     ]
@@ -542,15 +542,15 @@ resource "kubernetes_manifest" "clusterrolebinding_aws_node" {
 resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
   manifest = {
     "apiVersion" = "apps/v1"
-    "kind" = "DaemonSet"
+    "kind"       = "DaemonSet"
     "metadata" = {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
-        "app.kubernetes.io/name" = "aws-node"
-        "app.kubernetes.io/version" = "v1.19.0"
-        "k8s-app" = "aws-node"
+        "app.kubernetes.io/name"     = "aws-node"
+        "app.kubernetes.io/version"  = "v1.19.0"
+        "k8s-app"                    = "aws-node"
       }
-      "name" = "aws-node"
+      "name"      = "aws-node"
       "namespace" = "kube-system"
     }
     "spec" = {
@@ -563,8 +563,8 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
         "metadata" = {
           "labels" = {
             "app.kubernetes.io/instance" = "aws-vpc-cni"
-            "app.kubernetes.io/name" = "aws-node"
-            "k8s-app" = "aws-node"
+            "app.kubernetes.io/name"     = "aws-node"
+            "k8s-app"                    = "aws-node"
           }
         }
         "spec" = {
@@ -575,14 +575,14 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   {
                     "matchExpressions" = [
                       {
-                        "key" = "kubernetes.io/os"
+                        "key"      = "kubernetes.io/os"
                         "operator" = "In"
                         "values" = [
                           "linux",
                         ]
                       },
                       {
-                        "key" = "kubernetes.io/arch"
+                        "key"      = "kubernetes.io/arch"
                         "operator" = "In"
                         "values" = [
                           "amd64",
@@ -590,7 +590,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                         ]
                       },
                       {
-                        "key" = "eks.amazonaws.com/compute-type"
+                        "key"      = "eks.amazonaws.com/compute-type"
                         "operator" = "NotIn"
                         "values" = [
                           "fargate",
@@ -608,95 +608,95 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
             {
               "env" = [
                 {
-                  "name" = "ADDITIONAL_ENI_TAGS"
+                  "name"  = "ADDITIONAL_ENI_TAGS"
                   "value" = "{}"
                 },
                 {
-                  "name" = "AWS_VPC_CNI_NODE_PORT_SUPPORT"
+                  "name"  = "AWS_VPC_CNI_NODE_PORT_SUPPORT"
                   "value" = "true"
                 },
                 {
-                  "name" = "AWS_VPC_ENI_MTU"
+                  "name"  = "AWS_VPC_ENI_MTU"
                   "value" = "9001"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG"
+                  "name"  = "AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG"
                   "value" = "false"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_CNI_EXTERNALSNAT"
+                  "name"  = "AWS_VPC_K8S_CNI_EXTERNALSNAT"
                   "value" = "false"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_CNI_LOGLEVEL"
+                  "name"  = "AWS_VPC_K8S_CNI_LOGLEVEL"
                   "value" = "DEBUG"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_CNI_LOG_FILE"
+                  "name"  = "AWS_VPC_K8S_CNI_LOG_FILE"
                   "value" = "/host/var/log/aws-routed-eni/ipamd.log"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_CNI_RANDOMIZESNAT"
+                  "name"  = "AWS_VPC_K8S_CNI_RANDOMIZESNAT"
                   "value" = "prng"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_CNI_VETHPREFIX"
+                  "name"  = "AWS_VPC_K8S_CNI_VETHPREFIX"
                   "value" = "eni"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_PLUGIN_LOG_FILE"
+                  "name"  = "AWS_VPC_K8S_PLUGIN_LOG_FILE"
                   "value" = "/var/log/aws-routed-eni/plugin.log"
                 },
                 {
-                  "name" = "AWS_VPC_K8S_PLUGIN_LOG_LEVEL"
+                  "name"  = "AWS_VPC_K8S_PLUGIN_LOG_LEVEL"
                   "value" = "DEBUG"
                 },
                 {
-                  "name" = "DISABLE_INTROSPECTION"
+                  "name"  = "DISABLE_INTROSPECTION"
                   "value" = "false"
                 },
                 {
-                  "name" = "DISABLE_METRICS"
+                  "name"  = "DISABLE_METRICS"
                   "value" = "false"
                 },
                 {
-                  "name" = "DISABLE_NETWORK_RESOURCE_PROVISIONING"
+                  "name"  = "DISABLE_NETWORK_RESOURCE_PROVISIONING"
                   "value" = "false"
                 },
                 {
-                  "name" = "ENABLE_IPv4"
+                  "name"  = "ENABLE_IPv4"
                   "value" = "true"
                 },
                 {
-                  "name" = "ENABLE_IPv6"
+                  "name"  = "ENABLE_IPv6"
                   "value" = "false"
                 },
                 {
-                  "name" = "ENABLE_POD_ENI"
+                  "name"  = "ENABLE_POD_ENI"
                   "value" = "false"
                 },
                 {
-                  "name" = "ENABLE_PREFIX_DELEGATION"
+                  "name"  = "ENABLE_PREFIX_DELEGATION"
                   "value" = "false"
                 },
                 {
-                  "name" = "ENABLE_SUBNET_DISCOVERY"
+                  "name"  = "ENABLE_SUBNET_DISCOVERY"
                   "value" = "true"
                 },
                 {
-                  "name" = "NETWORK_POLICY_ENFORCING_MODE"
+                  "name"  = "NETWORK_POLICY_ENFORCING_MODE"
                   "value" = "standard"
                 },
                 {
-                  "name" = "VPC_CNI_VERSION"
+                  "name"  = "VPC_CNI_VERSION"
                   "value" = "v1.19.0"
                 },
                 {
-                  "name" = "WARM_ENI_TARGET"
+                  "name"  = "WARM_ENI_TARGET"
                   "value" = "1"
                 },
                 {
-                  "name" = "WARM_PREFIX_TARGET"
+                  "name"  = "WARM_PREFIX_TARGET"
                   "value" = "1"
                 },
                 {
@@ -704,7 +704,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   "valueFrom" = {
                     "fieldRef" = {
                       "apiVersion" = "v1"
-                      "fieldPath" = "spec.nodeName"
+                      "fieldPath"  = "spec.nodeName"
                     }
                   }
                 },
@@ -713,7 +713,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   "valueFrom" = {
                     "fieldRef" = {
                       "apiVersion" = "v1"
-                      "fieldPath" = "metadata.name"
+                      "fieldPath"  = "metadata.name"
                     }
                   }
                 },
@@ -729,13 +729,13 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   ]
                 }
                 "initialDelaySeconds" = 60
-                "timeoutSeconds" = 10
+                "timeoutSeconds"      = 10
               }
               "name" = "aws-node"
               "ports" = [
                 {
                   "containerPort" = 61678
-                  "name" = "metrics"
+                  "name"          = "metrics"
                 },
               ]
               "readinessProbe" = {
@@ -748,7 +748,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   ]
                 }
                 "initialDelaySeconds" = 1
-                "timeoutSeconds" = 10
+                "timeoutSeconds"      = 10
               }
               "resources" = {
                 "requests" = {
@@ -766,23 +766,23 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
               "volumeMounts" = [
                 {
                   "mountPath" = "/host/opt/cni/bin"
-                  "name" = "cni-bin-dir"
+                  "name"      = "cni-bin-dir"
                 },
                 {
                   "mountPath" = "/host/etc/cni/net.d"
-                  "name" = "cni-net-dir"
+                  "name"      = "cni-net-dir"
                 },
                 {
                   "mountPath" = "/host/var/log/aws-routed-eni"
-                  "name" = "log-dir"
+                  "name"      = "log-dir"
                 },
                 {
                   "mountPath" = "/var/run/aws-node"
-                  "name" = "run-dir"
+                  "name"      = "run-dir"
                 },
                 {
                   "mountPath" = "/run/xtables.lock"
-                  "name" = "xtables-lock"
+                  "name"      = "xtables-lock"
                 },
               ]
             },
@@ -803,14 +803,14 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   "valueFrom" = {
                     "fieldRef" = {
                       "apiVersion" = "v1"
-                      "fieldPath" = "spec.nodeName"
+                      "fieldPath"  = "spec.nodeName"
                     }
                   }
                 },
               ]
-              "image" = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.1.5"
+              "image"           = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.1.5"
               "imagePullPolicy" = "Always"
-              "name" = "aws-eks-nodeagent"
+              "name"            = "aws-eks-nodeagent"
               "resources" = {
                 "requests" = {
                   "cpu" = "25m"
@@ -827,19 +827,19 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
               "volumeMounts" = [
                 {
                   "mountPath" = "/host/opt/cni/bin"
-                  "name" = "cni-bin-dir"
+                  "name"      = "cni-bin-dir"
                 },
                 {
                   "mountPath" = "/sys/fs/bpf"
-                  "name" = "bpf-pin-path"
+                  "name"      = "bpf-pin-path"
                 },
                 {
                   "mountPath" = "/var/log/aws-routed-eni"
-                  "name" = "log-dir"
+                  "name"      = "log-dir"
                 },
                 {
                   "mountPath" = "/var/run/aws-node"
-                  "name" = "run-dir"
+                  "name"      = "run-dir"
                 },
               ]
             },
@@ -849,17 +849,17 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
             {
               "env" = [
                 {
-                  "name" = "DISABLE_TCP_EARLY_DEMUX"
+                  "name"  = "DISABLE_TCP_EARLY_DEMUX"
                   "value" = "false"
                 },
                 {
-                  "name" = "ENABLE_IPv6"
+                  "name"  = "ENABLE_IPv6"
                   "value" = "false"
                 },
               ]
-              "image" = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.19.0"
+              "image"           = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.19.0"
               "imagePullPolicy" = "Always"
-              "name" = "aws-vpc-cni-init"
+              "name"            = "aws-vpc-cni-init"
               "resources" = {
                 "requests" = {
                   "cpu" = "25m"
@@ -871,14 +871,14 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
               "volumeMounts" = [
                 {
                   "mountPath" = "/host/opt/cni/bin"
-                  "name" = "cni-bin-dir"
+                  "name"      = "cni-bin-dir"
                 },
               ]
             },
           ]
-          "priorityClassName" = "system-node-critical"
-          "securityContext" = {}
-          "serviceAccountName" = "aws-node"
+          "priorityClassName"             = "system-node-critical"
+          "securityContext"               = {}
+          "serviceAccountName"            = "aws-node"
           "terminationGracePeriodSeconds" = 10
           "tolerations" = [
             {

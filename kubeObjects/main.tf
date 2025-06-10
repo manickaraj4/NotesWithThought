@@ -13,10 +13,6 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-data "aws_s3_object" "kube_config" {
-  bucket = "samplebucketfortesting12345"
-  key    = "KubeConfig/kubeconfig"
-}
 
 data "aws_s3_object" "kube_client_cert" {
   bucket = "samplebucketfortesting12345"
@@ -34,10 +30,12 @@ data "aws_s3_object" "kube_ca_cert" {
 }
 
 provider "kubernetes" {
-  host = "https://masterlb-985247139.ap-south-1.elb.amazonaws.com:8443/"
+  host     = "https://masterlb-985247139.ap-south-1.elb.amazonaws.com:8443/"
 
-  client_certificate     = data.aws_s3_bucket_object.kube_client_cert.body
-  client_key             = data.aws_s3_bucket_object.kube_client_key.body
-  cluster_ca_certificate = data.aws_s3_bucket_object.kube_ca_cert.body
+  client_certificate     = data.aws_s3_object.kube_client_cert.body
+  client_key             = data.aws_s3_object.kube_client_key.body
+  /*
+  cluster_ca_certificate = data.aws_s3_object.kube_ca_cert.body
+  */
 }
 
