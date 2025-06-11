@@ -172,7 +172,7 @@ resource "aws_lb_target_group_attachment" "master_tg_attachment" {
 
 resource "null_resource" "wait_for_resource" {
   provisioner "local-exec" {
-    command = "sleep 250"
+    command = "sleep 550"
   }
 }
 
@@ -217,7 +217,7 @@ resource "aws_instance" "master_server" {
 }
 
 resource "aws_instance" "worker_node" {
-  depends_on             = [null_resource.wait_for_resource, aws_instance.master_server]
+  depends_on             = [null_resource.wait_for_resource]
   ami                    = "ami-0f535a71b34f2d44a"
   instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.id
@@ -304,7 +304,7 @@ resource "aws_iam_role_policy" "ssm_policy" {
           "ssm:PutParameter"
         ]
         Effect   = "Allow"
-        Resource = "arn:aws:ssm:ap-south-1:${data.aws_caller_identity.current.account_id}:parameter/kube_join_command"
+        Resource = "arn:aws:ssm:ap-south-1:${data.aws_caller_identity.current.account_id}:parameter/kube_*"
       },
       {
         "Effect" : "Allow",
@@ -333,4 +333,8 @@ output "master_node_public_address" {
 
 output "worker_node_public_address" {
   value = aws_instance.worker_node.public_dns
+}
+
+output "lb_dns" {
+  value = aws_lb.master_lb.dns_name
 }

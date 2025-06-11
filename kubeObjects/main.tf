@@ -29,13 +29,20 @@ data "aws_s3_object" "kube_ca_cert" {
   key    = "KubeConfig/cluster-ca-cert.pem"
 }
 
-provider "kubernetes" {
-  host     = "https://masterlb-985247139.ap-south-1.elb.amazonaws.com:8443/"
 
+data "aws_ssm_parameter" "kube_static_token" {
+  name = "kube_static_token"
+  with_decryption = true
+}
+
+provider "kubernetes" {
+  host     = "https://masterlb-105885546.ap-south-1.elb.amazonaws.com:8443"
+  insecure = true
+  token = "Bearer ${data.aws_ssm_parameter.kube_static_token.value}"
+
+  /*
   client_certificate     = data.aws_s3_object.kube_client_cert.body
   client_key             = data.aws_s3_object.kube_client_key.body
-  /*
   cluster_ca_certificate = data.aws_s3_object.kube_ca_cert.body
   */
 }
-

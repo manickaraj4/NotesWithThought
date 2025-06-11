@@ -25,6 +25,13 @@ sudo yum install -y docker
 
 sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
+sudo mkdir -p /etc/kubernetes
+sudo echo "`openssl rand -hex 12`,terraform,1234,\"kubeadm:cluster-admins\"" > /etc/kubernetes/static-token
+
+#sudo cat /etc/kubernetes/static-token | cut -d "," -f 1 > /home/ec2-user/static-token
+#aws s3 cp /home/ec2-user/static-token s3://samplebucketfortesting12345/KubeConfig/static-token --content-type="text/*"
+aws ssm put-parameter --name kube_static_token --value "$(sudo cat /etc/kubernetes/static-token | cut -d ',' -f 1)" --overwrite --region ap-south-1 
+
 cat <<EOF | sudo tee /etc/containerd/config.toml
 version = 2
 [plugins]
@@ -39,8 +46,24 @@ EOF
 
 sudo systemctl enable --now docker
 
+cat <<EOF | sudo tee /etc/kubernetes/apiserver-custom.yaml
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+apiServer:
+  extraArgs:
+  - name: "token-auth-file"
+    value: "/etc/kubernetes/static-token"
+  extraVolumes:
+    - name: static-token
+      hostPath: /etc/kubernetes/static-token
+      mountPath: /etc/kubernetes/static-token
+      readOnly: true
+      pathType: "File"
+EOF
+
 sudo systemctl enable kubelet
-sudo kubeadm init
+
+sudo kubeadm init --config /etc/kubernetes/apiserver-custom.yaml
 
 mkdir -p /home/ec2-user/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
