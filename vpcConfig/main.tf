@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 4.16"
     }
+    time = {
+      source = "hashicorp/time"
+      version = "0.13.1"
+    }
   }
 
   required_version = ">= 1.2.0"
@@ -11,6 +15,9 @@ terraform {
 
 provider "aws" {
   region = "ap-south-1"
+}
+
+provider "time" {
 }
 
 data "aws_caller_identity" "current" {}
@@ -107,7 +114,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_kube_master_ports" {
 }
 
 resource "aws_lb" "master_lb" {
-  depends_on         = [null_resource.wait_for_resource, aws_instance.master_server]
+  depends_on         = [time_sleep.wait_300_seconds, aws_instance.master_server]
   name               = "masterlb"
   internal           = false
   load_balancer_type = "application"
@@ -170,10 +177,8 @@ resource "aws_lb_target_group_attachment" "master_tg_attachment" {
   port             = 6443
 }
 
-resource "null_resource" "wait_for_resource" {
-  provisioner "local-exec" {
-    command = "sleep 550"
-  }
+resource "time_sleep" "wait_300_seconds" {
+  create_duration = "300s"
 }
 
 resource "aws_security_group" "allow_all_tcp_between_nodes" {
@@ -217,7 +222,7 @@ resource "aws_instance" "master_server" {
 }
 
 resource "aws_instance" "worker_node" {
-  depends_on             = [null_resource.wait_for_resource]
+  depends_on             = [time_sleep.wait_300_seconds]
   ami                    = "ami-0f535a71b34f2d44a"
   instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.id

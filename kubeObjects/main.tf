@@ -70,11 +70,8 @@ provider "kubernetes" {
   */
 }
 
-
-/*
-provider "kubernetes" {
-  config_path    = "/home/codespace/.kube/config"
+module "vpc_cni_deployment" {
+  source = "./vpc-cni"
 }
-*/
 
 
