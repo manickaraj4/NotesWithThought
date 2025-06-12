@@ -604,6 +604,11 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
               }
             }
           }
+          "imagePullSecrets" = [
+            {
+              "name" = "docker-cfg"
+            }
+          ]
           "containers" = [
             {
               "env" = [
@@ -718,7 +723,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   }
                 },
               ]
-              "image" = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni:v1.19.0"
+              "image" = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon-k8s-cni:v1.19.0"
               "livenessProbe" = {
                 "exec" = {
                   "command" = [
@@ -808,7 +813,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   }
                 },
               ]
-              "image"           = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-network-policy-agent:v1.1.5"
+              "image"           = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon/aws-network-policy-agent:v1.1.5"
               "imagePullPolicy" = "Always"
               "name"            = "aws-eks-nodeagent"
               "resources" = {
@@ -857,7 +862,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   "value" = "false"
                 },
               ]
-              "image"           = "602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon-k8s-cni-init:v1.19.0"
+              "image"           = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon-k8s-cni-init:v1.19.0"
               "imagePullPolicy" = "Always"
               "name"            = "aws-vpc-cni-init"
               "resources" = {
