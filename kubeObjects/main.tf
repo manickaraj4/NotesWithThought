@@ -73,4 +73,10 @@ module "vpc_cni_deployment" {
   source = "./vpc-cni"
 }
 
+module "go_server_deployment" {
+  source = "./goserverdeployment"
+
+  aws_region = var.aws_region
+}
+
 

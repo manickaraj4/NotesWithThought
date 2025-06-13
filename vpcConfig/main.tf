@@ -35,3 +35,7 @@ module "lb" {
   config_s3_bucket = var.config_s3_bucket
   master_node      = module.servers.master_node_id
 }
+
+module "ecrrepo" {
+  source = "./ecr"
+}

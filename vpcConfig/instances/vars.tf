@@ -13,9 +13,7 @@ variable "instance_type" {
   type    = string
 }
 
-variable "aws_region" {
-  type = string
-}
+ 
 
 variable "config_s3_bucket" {
   type = string
