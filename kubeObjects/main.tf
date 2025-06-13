@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-south-1"
+  region = var.aws_region
 }
 
 data "aws_ecr_authorization_token" "ecr_token" {
@@ -27,7 +27,7 @@ resource "kubernetes_secret" "docker_token_secret" {
   data = {
     ".dockerconfigjson" = jsonencode({
       auths = {
-        "602401143452.dkr.ecr.ap-south-1.amazonaws.com" = {
+        "602401143452.dkr.ecr.${var.aws_region}.amazonaws.com" = {
           "username" = "AWS"
           "auth"     = "${data.aws_ecr_authorization_token.ecr_token.authorization_token}"
         }
@@ -38,17 +38,17 @@ resource "kubernetes_secret" "docker_token_secret" {
 
 /*
 data "aws_s3_object" "kube_client_cert" {
-  bucket = "samplebucketfortesting12345"
+  bucket = var.config_s3_bucket
   key    = "KubeConfig/client-cert.pem"
 }
 
 data "aws_s3_object" "kube_client_key" {
-  bucket = "samplebucketfortesting12345"
+  bucket = var.config_s3_bucket
   key    = "KubeConfig/client-key.pem"
 }
 
 data "aws_s3_object" "kube_ca_cert" {
-  bucket = "samplebucketfortesting12345"
+  bucket = var.config_s3_bucket
   key    = "KubeConfig/cluster-ca-cert.pem"
 }
 */
@@ -58,9 +58,8 @@ data "aws_ssm_parameter" "kube_static_token" {
   with_decryption = true
 }
 
-
 provider "kubernetes" {
-  host     = "https://masterlb-753854550.ap-south-1.elb.amazonaws.com:8443"
+  host     = var.apiserver_host
   insecure = true
   token    = data.aws_ssm_parameter.kube_static_token.value
   /*
