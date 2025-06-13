@@ -1,9 +1,17 @@
 variable "aws_region" {
   default = "ap-south-1"
+  type    = string
 }
 
+variable "config_s3_bucket" {
+  default = "samplebucketfortesting12345"
+  type    = string
+}
+
+/*
 variable "environment" {
   default = "default"
+  type        = string
 }
 
 variable "vpc_cidr" {
@@ -22,3 +30,4 @@ variable "private_subnets_cidr" {
   default     = ["10.0.16.0/20", "10.0.144.0/20"]
   description = "CIDR block for Private Subnet"
 }
+*/
