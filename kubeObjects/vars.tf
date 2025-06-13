@@ -1,5 +1,5 @@
 variable "apiserver_host" {
-  default = "https://masterlb-493481425.ap-south-1.elb.amazonaws.com:8443"
+  default = "https://masterlb-1108701418.ap-south-1.elb.amazonaws.com:8443"
   type = string
 }
 

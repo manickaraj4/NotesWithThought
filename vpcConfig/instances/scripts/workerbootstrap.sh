@@ -41,4 +41,4 @@ sudo systemctl enable --now docker
 
 sudo systemctl enable kubelet
 
-sudo `aws ssm get-parameter --name kube_join_command --with-decryption --region ap-south-1 | jq -r ".Parameter.Value"`
+sudo `aws ssm get-parameter --name kube_join_command --with-decryption --region ${region} | jq -r ".Parameter.Value"`

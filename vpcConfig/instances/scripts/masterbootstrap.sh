@@ -30,7 +30,7 @@ sudo echo "`openssl rand -hex 12`,terraform,1234,\"kubeadm:cluster-admins\"" > /
 
 #sudo cat /etc/kubernetes/static-token | cut -d "," -f 1 > /home/ec2-user/static-token
 #aws s3 cp /home/ec2-user/static-token s3://samplebucketfortesting12345/KubeConfig/static-token --content-type="text/*"
-aws ssm put-parameter --name kube_static_token --value "$(sudo cat /etc/kubernetes/static-token | cut -d ',' -f 1)" --overwrite --region ap-south-1 
+aws ssm put-parameter --name kube_static_token --value "$(sudo cat /etc/kubernetes/static-token | cut -d ',' -f 1)" --overwrite --region ${region}
 
 cat <<EOF | sudo tee /etc/containerd/config.toml
 version = 2
@@ -75,12 +75,10 @@ sudo cat /etc/kubernetes/admin.conf | grep certificate-authority-data | cut -d "
 
 sleep 10
 
-#kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/refs/heads/master/manifests/calico.yaml
+aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ${region}
 
-aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ap-south-1 
-
-aws s3 cp /home/ec2-user/.kube/config s3://samplebucketfortesting12345/KubeConfig/kubeconfig --content-type="text/*"
-aws s3 cp /home/ec2-user/.kube/client-key.pem s3://samplebucketfortesting12345/KubeConfig/client-key.pem --content-type="text/*"
-aws s3 cp /home/ec2-user/.kube/client-cert.pem s3://samplebucketfortesting12345/KubeConfig/client-cert.pem --content-type="text/*"
-aws s3 cp /home/ec2-user/.kube/cluster-ca-cert.pem s3://samplebucketfortesting12345/KubeConfig/cluster-ca-cert.pem --content-type="text/*"
-sudo aws s3 cp /etc/kubernetes/pki/ca.key s3://samplebucketfortesting12345/KubeConfig/cluster-ca-key.pem --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/config s3://${bucket}/KubeConfig/kubeconfig --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/client-key.pem s3://${bucket}/KubeConfig/client-key.pem --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/client-cert.pem s3://${bucket}/KubeConfig/client-cert.pem --content-type="text/*"
+aws s3 cp /home/ec2-user/.kube/cluster-ca-cert.pem s3://${bucket}/KubeConfig/cluster-ca-cert.pem --content-type="text/*"
+sudo aws s3 cp /etc/kubernetes/pki/ca.key s3://${bucket}/KubeConfig/cluster-ca-key.pem --content-type="text/*"

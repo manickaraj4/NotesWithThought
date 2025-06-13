@@ -1,0 +1,42 @@
+{
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Action" : [
+          "ssm:GetParameter",
+          "ssm:PutParameter"
+        ],
+        "Effect"   : "Allow",
+        "Resource" : "arn:aws:ssm:${region}:${account_id}:parameter/kube_*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "kms:Decrypt",
+          "kms:DescribeKey",
+          "kms:ReEncrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey",
+          "kms:CreateGrant"
+        ],
+        "Resource" : "arn:aws:kms:${region}:${account_id}:key/*",
+        "Condition": {
+          "ForAllValues:StringLike": {
+            "kms:ResourceAliases": [
+              "alias/aws/ssm"
+            ]
+          },
+          "ForAnyValue:StringLike": {
+            "kms:ResourceAliases": [
+              "alias/aws/ssm"
+            ]
+          }
+        }
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : "s3:PutObject",
+        "Resource" : "arn:aws:s3:::${bucket}/KubeConfig/*"
+      }
+    ]
+  }

@@ -4,6 +4,7 @@ resource "aws_key_pair" "deployer" {
 }
 
 resource "time_sleep" "wait_300_seconds" {
+  depends_on      = [aws_instance.master_server]
   create_duration = "300s"
 }
 
@@ -34,36 +35,7 @@ resource "aws_iam_role_policy" "ssm_policy" {
   name = "ssm_policy"
   role = aws_iam_role.ec2_instance_role.id
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "ssm:GetParameter",
-          "ssm:PutParameter"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/kube_*"
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "kms:Decrypt",
-          "kms:DescribeKey",
-          "kms:ReEncrypt",
-          "kms:Encrypt",
-          "kms:GenerateDataKey",
-          "kms:CreateGrant"
-        ],
-        "Resource" : "arn:aws:kms:${var.aws_region}:${data.aws_caller_identity.current.account_id}:key/e9dff97e-31dd-4c66-a0ab-d561c610e5be"
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : "s3:PutObject",
-        "Resource" : "arn:aws:s3:::${var.config_s3_bucket}/KubeConfig/*"
-      }
-    ]
-  })
+  policy = templatefile("${path.module}/scripts/ssmec2policy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}", bucket = "${var.config_s3_bucket}" })
 }
 
 resource "aws_security_group" "allow_ssh" {
@@ -118,7 +90,7 @@ resource "aws_instance" "master_server" {
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id, aws_security_group.allow_all_from_lb.id]
-  user_data              = file("${path.module}/scripts/masterbootstrap.sh")
+  user_data              = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
   tags = {
@@ -133,7 +105,7 @@ resource "aws_instance" "worker_node" {
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
-  user_data              = file("${path.module}/scripts/workerbootstrap.sh")
+  user_data              = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
 
   tags = {
