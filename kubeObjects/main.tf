@@ -58,8 +58,13 @@ data "aws_ssm_parameter" "kube_static_token" {
   with_decryption = true
 }
 
+data "aws_ssm_parameter" "lb_name" {
+  name            = "lb_name"
+  with_decryption = false
+}
+
 provider "kubernetes" {
-  host     = var.apiserver_host
+  host     = "https://${data.aws_ssm_parameter.lb_name.value}:8443"
   insecure = true
   token    = data.aws_ssm_parameter.kube_static_token.value
   /*
@@ -74,7 +79,8 @@ module "vpc_cni_deployment" {
 }
 
 module "go_server_deployment" {
-  source = "./goserverdeployment"
+  depends_on = [module.vpc_cni_deployment]
+  source     = "./goserverdeployment"
 
   aws_region = var.aws_region
 }

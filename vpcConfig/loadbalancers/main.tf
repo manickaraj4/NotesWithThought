@@ -100,6 +100,10 @@ resource "aws_lb" "master_lb" {
   tags = {
     Name = "TerraformManaged"
   }
+
+  provisioner "local-exec" {
+    command = "aws ssm put-parameter --name lb_name --type String --value ${aws_lb.master_lb.dns_name} --overwrite --region ${var.aws_region}"
+  }
 }
 
 resource "aws_lb_listener" "master_listener" {
