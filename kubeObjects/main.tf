@@ -79,7 +79,6 @@ module "vpc_cni_deployment" {
 }
 
 module "go_server_deployment" {
-  depends_on = [module.vpc_cni_deployment]
   source     = "./goserverdeployment"
 
   aws_region = var.aws_region

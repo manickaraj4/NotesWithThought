@@ -102,6 +102,7 @@ resource "aws_instance" "master_server" {
 resource "aws_instance" "worker_node" {
   depends_on             = [time_sleep.wait_300_seconds]
   ami                    = var.ami
+  #ami                    = "ami-002c8f09d560aa82e"
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
@@ -114,15 +115,15 @@ resource "aws_instance" "worker_node" {
   }
 }
 
-/*
 resource "aws_instance" "bastion_node" {
-  ami                    = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  ami                    = var.ami
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
+  user_data              = file("${path.module}/scripts/bastionbootstrap.sh")
   disable_api_termination = true
   tags = {
-    Name = "TerraformManaged"
+    Name      = "BastionHost",
+    ManagedBy = "Terraform"
   }
 }
-*/
