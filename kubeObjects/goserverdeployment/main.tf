@@ -92,9 +92,9 @@ resource "kubernetes_service" "post_service" {
   }
   spec {
     selector = {
-      app = "GoServerApp"
+      test = "GoServerApp"
     }
-    session_affinity = "ClientIP"
+    #session_affinity = "ClientIP"
     port {
       port        = 80
       target_port = 8080
