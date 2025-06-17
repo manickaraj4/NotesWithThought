@@ -5,7 +5,7 @@ resource "aws_key_pair" "deployer" {
 
 resource "time_sleep" "wait_300_seconds" {
   depends_on      = [aws_instance.master_server]
-  create_duration = "300s"
+  create_duration = "180s"
 }
 
 data "aws_caller_identity" "current" {}
