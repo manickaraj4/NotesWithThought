@@ -1,6 +1,6 @@
 Find IP assigned on inside pod namespace:
 ```
-for netns in $( ip netns list | cut -d " " -f 1); do echo "${netns} ==============" ; ip netns exec "${netns}" ip a ; echo "=========="; done
+for netns in $( ip netns list | cut -d " " -f 1); do echo "${netns} ==============" ; ip netns exec "${netns}" ip a ; arp -n ; echo "=========="; done
 ```
 
 netshoot container deployment yaml:
