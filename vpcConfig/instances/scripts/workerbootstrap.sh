@@ -22,25 +22,9 @@ EOF
 
 sudo yum install yum-utils device-mapper-persistent-data lvm2 containerd -y
 
-cat <<EOF | sudo tee /etc/systemd/network/99-default.link
-[Match]
-OriginalName=*
-[Link]
-NamePolicy=keep kernel database onboard slot path
-AlternativeNamesPolicy=database onboard slot path
-MACAddressPolicy=none
-EOF
-
 sudo yum install -y docker
 
-sudo mkdir -p /usr/lib/systemd/networkd.conf.d/
-cat <<EOF | sudo tee /usr/lib/systemd/networkd.conf.d/80-release.conf
-# Do not clobber any routes or rules added by CNI.
-[Network]
-ManageForeignRoutes=no
-ManageForeignRoutingPolicyRules=no
-EOF
-sudo systemctl restart systemd-networkd
+sudo yum remove -y ec2-net-utils # Remove ec2-net-utils otherwise VPC CNI won't work
 
 sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
