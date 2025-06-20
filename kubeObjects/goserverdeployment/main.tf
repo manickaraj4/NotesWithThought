@@ -54,7 +54,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
         }
 
         container {
-          image = "989125398105.dkr.ecr.ap-south-1.amazonaws.com/apprepo:latest"
+          image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/apprepo:latest"
           name  = "goserver"
           port {
             container_port = 8080
