@@ -354,7 +354,7 @@ resource "kubernetes_manifest" "serviceaccount_kube_system_aws_node" {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
         "app.kubernetes.io/name"     = "aws-node"
-        "app.kubernetes.io/version"  = "v1.19.0"
+        "app.kubernetes.io/version"  = "v1.19.6"
         "k8s-app"                    = "aws-node"
       }
       "name"      = "aws-node"
@@ -380,7 +380,7 @@ resource "kubernetes_manifest" "configmap_kube_system_amazon_vpc_cni" {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
         "app.kubernetes.io/name"     = "aws-node"
-        "app.kubernetes.io/version"  = "v1.19.0"
+        "app.kubernetes.io/version"  = "v1.19.6"
         "k8s-app"                    = "aws-node"
       }
       "name"      = "amazon-vpc-cni"
@@ -397,7 +397,7 @@ resource "kubernetes_manifest" "clusterrole_aws_node" {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
         "app.kubernetes.io/name"     = "aws-node"
-        "app.kubernetes.io/version"  = "v1.19.0"
+        "app.kubernetes.io/version"  = "v1.19.6"
         "k8s-app"                    = "aws-node"
       }
       "name" = "aws-node"
@@ -519,7 +519,7 @@ resource "kubernetes_manifest" "clusterrolebinding_aws_node" {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
         "app.kubernetes.io/name"     = "aws-node"
-        "app.kubernetes.io/version"  = "v1.19.0"
+        "app.kubernetes.io/version"  = "v1.19.6"
         "k8s-app"                    = "aws-node"
       }
       "name" = "aws-node"
@@ -547,7 +547,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
       "labels" = {
         "app.kubernetes.io/instance" = "aws-vpc-cni"
         "app.kubernetes.io/name"     = "aws-node"
-        "app.kubernetes.io/version"  = "v1.19.0"
+        "app.kubernetes.io/version"  = "v1.19.6"
         "k8s-app"                    = "aws-node"
       }
       "name"      = "aws-node"
@@ -694,7 +694,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                 },
                 {
                   "name"  = "VPC_CNI_VERSION"
-                  "value" = "v1.19.0"
+                  "value" = "v1.19.6"
                 },
                 {
                   "name"  = "WARM_ENI_TARGET"
@@ -723,7 +723,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   }
                 },
               ]
-              "image" = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon-k8s-cni:v1.19.0"
+              "image" = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon-k8s-cni:v1.19.6"
               "livenessProbe" = {
                 "exec" = {
                   "command" = [
@@ -862,7 +862,7 @@ resource "kubernetes_manifest" "daemonset_kube_system_aws_node" {
                   "value" = "false"
                 },
               ]
-              "image"           = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon-k8s-cni-init:v1.19.0"
+              "image"           = "602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon-k8s-cni-init:v1.19.6"
               "imagePullPolicy" = "Always"
               "name"            = "aws-vpc-cni-init"
               "resources" = {

@@ -1,3 +1,10 @@
+Find IP assigned on inside pod namespace:
+```
+for netns in $( ip netns list | cut -d " " -f 1); do echo "${netns} ==============" ; ip netns exec "${netns}" ip a ; echo "=========="; done
+```
+
+netshoot container deployment yaml:
+```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,3 +30,4 @@ spec:
         image: nicolaka/netshoot
         command: ["/bin/bash"]
         args: ["-c", "while true; do ping -c1 localhost; sleep 60;done"]
+```

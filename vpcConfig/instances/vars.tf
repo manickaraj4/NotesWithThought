@@ -4,7 +4,7 @@ variable "ssh_key_pub" {
 }
 
 variable "ami" {
-  default = "ami-0f535a71b34f2d44a"
+  default = "ami-00b7ea845217da02c" # Using Amazon Linux 2 
   type    = string
 }
 

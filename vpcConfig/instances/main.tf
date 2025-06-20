@@ -5,7 +5,7 @@ resource "aws_key_pair" "deployer" {
 
 resource "time_sleep" "wait_300_seconds" {
   depends_on      = [aws_instance.master_server]
-  create_duration = "180s"
+  create_duration = "240s"
 }
 
 data "aws_caller_identity" "current" {}
@@ -102,7 +102,7 @@ resource "aws_instance" "master_server" {
 resource "aws_instance" "worker_node" {
   depends_on             = [time_sleep.wait_300_seconds]
   ami                    = var.ami
-  #ami                    = "ami-002c8f09d560aa82e"
+  #ami                    = "ami-002c8f09d560aa82e" /*eks AMI*/
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
@@ -115,8 +115,9 @@ resource "aws_instance" "worker_node" {
   }
 }
 
+/*
 resource "aws_instance" "bastion_node" {
-  ami                    = var.ami
+  ami                    = "ami-002c8f09d560aa82e"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
@@ -127,3 +128,4 @@ resource "aws_instance" "bastion_node" {
     ManagedBy = "Terraform"
   }
 }
+*/
