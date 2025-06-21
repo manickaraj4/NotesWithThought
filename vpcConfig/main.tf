@@ -20,6 +20,12 @@ provider "aws" {
 provider "time" {
 }
 
+module "vpc" {
+  source = "./vpc"
+
+  aws_region      = var.aws_region
+}
+
 module "servers" {
   source = "./instances"
 
@@ -39,3 +45,4 @@ module "lb" {
 module "ecrrepo" {
   source = "./ecr"
 }
+
