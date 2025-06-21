@@ -79,8 +79,14 @@ sleep 10
 
 aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ${region}
 
+sudo yum install -y jq
+
 aws s3 cp /home/ec2-user/.kube/config s3://${bucket}/KubeConfig/kubeconfig --content-type="text/*"
 aws s3 cp /home/ec2-user/.kube/client-key.pem s3://${bucket}/KubeConfig/client-key.pem --content-type="text/*"
 aws s3 cp /home/ec2-user/.kube/client-cert.pem s3://${bucket}/KubeConfig/client-cert.pem --content-type="text/*"
 aws s3 cp /home/ec2-user/.kube/cluster-ca-cert.pem s3://${bucket}/KubeConfig/cluster-ca-cert.pem --content-type="text/*"
 sudo aws s3 cp /etc/kubernetes/pki/ca.key s3://${bucket}/KubeConfig/cluster-ca-key.pem --content-type="text/*"
+
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh

@@ -44,4 +44,5 @@ sudo systemctl enable --now docker
 
 sudo systemctl enable kubelet
 
+sudo yum install -y jq
 sudo `aws ssm get-parameter --name kube_join_command --with-decryption --region ${region} | jq -r ".Parameter.Value"`

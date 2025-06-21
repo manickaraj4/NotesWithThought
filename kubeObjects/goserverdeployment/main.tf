@@ -3,6 +3,10 @@ data "aws_ecr_authorization_token" "ecr_token" {
 
 data "aws_caller_identity" "current" {}
 
+data "aws_ssm_parameter" "lb_cert_id" {
+  name = "DomainCertId"
+}
+
 resource "kubernetes_secret" "docker_token_secret-default" {
   metadata {
     name      = "docker-cfg-default"
@@ -58,7 +62,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
           name  = "goserver"
           port {
             container_port = 8080
-          } 
+          }
 
           resources {
             limits = {
@@ -103,3 +107,53 @@ resource "kubernetes_service" "post_service" {
     type = "ClusterIP"
   }
 }
+
+resource "kubernetes_ingress_v1" "post_service_ingress" {
+  metadata {
+    name = "postservice-ingress"
+    annotations = {
+      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"      = "instance"
+      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 80}]"
+      "alb.ingress.kubernetes.io/certificate-arn"  = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
+      /*  "alb.ingress.kubernetes.io/healthcheck-path" = "/posts"
+      "alb.ingress.kubernetes.io/healthcheck-port" = "8080"
+      "alb.ingress.kubernetes.io/success-codes"    = "200-404" */
+    }
+  }
+
+  spec {
+    ingress_class_name = "alb"
+    /*     default_backend {
+      service {
+        name = "posts-app"
+        port {
+          number = 80
+        }
+      }
+    } */
+
+    rule {
+      host = "posts-app.manicks.xyz"
+      http {
+        path {
+          backend {
+            service {
+              name = "posts-app"
+              port {
+                number = 80
+              }
+            }
+          }
+          path = "/posts-app"
+          path_type = "Prefix"
+        }
+      }
+    }
+  }
+}
+
+
+
+
+

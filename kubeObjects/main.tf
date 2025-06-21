@@ -79,9 +79,80 @@ module "vpc_cni_deployment" {
 }
 
 module "go_server_deployment" {
-  source     = "./goserverdeployment"
+  source = "./goserverdeployment"
 
   aws_region = var.aws_region
 }
+
+provider "helm" {
+  kubernetes = {
+    host     = "https://${data.aws_ssm_parameter.lb_name.value}:8443"
+    insecure = true
+    token    = data.aws_ssm_parameter.kube_static_token.value
+  }
+
+  /*  registries = [
+    {
+      url      = "oci://private.registry"
+      username = "username"
+      password = "password"
+    }
+  ] */
+}
+
+resource "kubernetes_namespace" "nginx_ingress_ns" {
+  metadata {
+    name = "ingress-nginx"
+  }
+}
+
+resource "helm_release" "aws_lb_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+
+  set = [
+    {
+      name  = "clusterName"
+      value = "kubernetes"
+    }
+  ]
+}
+
+/* resource "helm_release" "nginx_ingress" {
+  name       = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart      = "ingress-nginx"
+  cleanup_on_fail = true
+  atomic = true
+
+  set = [
+    {
+      name  = "service.type"
+      value = "ClusterIP"
+    }
+  ] 
+} */
+
+/* resource "kubernetes_manifest" "test-crd" {
+  manifest = {
+    apiVersion = "elbv2.k8s.aws/v1beta1"
+    kind       = "TargetGroupBinding"
+
+    metadata = {
+      name = "default-tgb"
+    }
+
+    spec = {
+      targetGroupName = ""
+
+      serviceRef = {
+        name = "posts-app"
+        port = "80"
+      }
+    }
+  }
+} */
+
 
 

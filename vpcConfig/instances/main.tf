@@ -38,6 +38,13 @@ resource "aws_iam_role_policy" "ssm_policy" {
   policy = templatefile("${path.module}/scripts/ssmec2policy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}", bucket = "${var.config_s3_bucket}" })
 }
 
+resource "aws_iam_role_policy" "loadbalancer_controller_policy" {
+  name = "loadbalancer_controller_policy"
+  role = aws_iam_role.ec2_instance_role.id
+
+  policy = file("${path.module}/scripts/loadbalancercontrollerpolicy.json")
+}
+
 resource "aws_security_group" "allow_ssh" {
   egress {
     from_port   = 0
