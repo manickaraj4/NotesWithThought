@@ -64,7 +64,7 @@ data "aws_ssm_parameter" "lb_name" {
 }
 
 provider "kubernetes" {
-  host     = "https://${data.aws_ssm_parameter.lb_name.value}:8443"
+  host     = "https://${data.aws_ssm_parameter.lb_name.value}:443"
   insecure = true
   token    = data.aws_ssm_parameter.kube_static_token.value
   /*
@@ -74,39 +74,42 @@ provider "kubernetes" {
   */
 }
 
-module "vpc_cni_deployment" {
+/* module "vpc_cni_deployment" {
   source = "./vpc-cni"
-}
+} */
 
-module "go_server_deployment" {
+/* module "go_server_deployment" {
   source = "./goserverdeployment"
 
   aws_region = var.aws_region
-}
+} */
 
 provider "helm" {
   kubernetes = {
-    host     = "https://${data.aws_ssm_parameter.lb_name.value}:8443"
+    host     = "https://${data.aws_ssm_parameter.lb_name.value}:443"
     insecure = true
     token    = data.aws_ssm_parameter.kube_static_token.value
   }
-
-  /*  registries = [
-    {
-      url      = "oci://private.registry"
-      username = "username"
-      password = "password"
-    }
-  ] */
 }
 
-resource "kubernetes_namespace" "nginx_ingress_ns" {
+resource "helm_release" "aws_vpc_cni" {
+  name       = "aws-vpc-cni"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-vpc-cni"
+  namespace  = "kube-system"
+
+  values = [
+    yamlencode(yamldecode(templatefile("${path.module}/vpc-cni/charts/values.yaml", { region = "${var.aws_region}" })))
+  ]
+} 
+
+/* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
     name = "ingress-nginx"
   }
-}
+} */
 
-resource "helm_release" "aws_lb_controller" {
+/* resource "helm_release" "aws_lb_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
@@ -117,7 +120,7 @@ resource "helm_release" "aws_lb_controller" {
       value = "kubernetes"
     }
   ]
-}
+} */
 
 /* resource "helm_release" "nginx_ingress" {
   name       = "ingress-nginx"

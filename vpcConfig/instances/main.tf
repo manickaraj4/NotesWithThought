@@ -45,33 +45,39 @@ resource "aws_iam_role_policy" "loadbalancer_controller_policy" {
   policy = file("${path.module}/scripts/loadbalancercontrollerpolicy.json")
 }
 
-resource "aws_security_group" "allow_ssh" {
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+/* resource "aws_security_group" "allow_ssh" {
+  vpc_id = var.vpc_id
 
   tags = {
     Name = "TerraformManaged"
   }
-}
+} */
 
 resource "aws_security_group" "allow_all_tcp_between_nodes" {
-  name = "allow_cross_node_communication"
+  name   = "allow_cross_node_communication"
+  vpc_id = var.vpc_id
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+
   tags = {
     Name = "TerraformManaged"
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_ssh_inbound_rule" {
+/* resource "aws_vpc_security_group_ingress_rule" "allow_ssh_inbound_rule" {
   security_group_id = aws_security_group.allow_ssh.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 22
   ip_protocol       = "tcp"
   to_port           = 22
-}
+} */
 
 resource "aws_vpc_security_group_ingress_rule" "allow_cross_node_communication" {
   security_group_id            = aws_security_group.allow_all_tcp_between_nodes.id
@@ -80,7 +86,9 @@ resource "aws_vpc_security_group_ingress_rule" "allow_cross_node_communication" 
 }
 
 resource "aws_security_group" "allow_all_from_lb" {
-  name = "allow_all_from_lb"
+  name   = "allow_all_from_lb"
+  vpc_id = var.vpc_id
+
   tags = {
     Name = "TerraformManaged"
   }
@@ -93,12 +101,16 @@ resource "aws_vpc_security_group_ingress_rule" "allow_lb_sg" {
 }
 
 resource "aws_instance" "master_server" {
-  ami                    = var.ami
-  instance_type          = var.instance_type
-  key_name               = aws_key_pair.deployer.id
-  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id, aws_security_group.allow_all_from_lb.id]
-  user_data              = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
-  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
+  ami                         = var.ami
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.deployer.id
+  vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
+  user_data                   = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
+  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
+  user_data_replace_on_change = true
+  subnet_id                   = var.private_subnet_1a
+  associate_public_ip_address = false
+  ipv6_address_count          = 1
 
   tags = {
     Name      = "masterServer",
@@ -107,14 +119,17 @@ resource "aws_instance" "master_server" {
 }
 
 resource "aws_instance" "worker_node" {
-  depends_on             = [time_sleep.wait_300_seconds]
-  ami                    = var.ami
-  #ami                    = "ami-002c8f09d560aa82e" /*eks AMI*/
-  instance_type          = var.instance_type
-  key_name               = aws_key_pair.deployer.id
-  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
-  user_data              = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
-  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
+  depends_on                  = [time_sleep.wait_300_seconds]
+  ami                         = var.ami
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.deployer.id
+  vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
+  user_data                   = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
+  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
+  user_data_replace_on_change = true
+  subnet_id                   = var.private_subnet_1b
+  associate_public_ip_address = false
+  ipv6_address_count          = 1
 
   tags = {
     Name      = "workerNode",

@@ -3,5 +3,5 @@ output "lb_dns" {
 }
 
 output "alb_sg" {
-  value = aws_security_group.alb_sg.id
+  value = aws_security_group.nlb_sg.id
 }

@@ -1,5 +1,5 @@
 
-data "aws_s3_object" "kube_ca_cert" {
+/* data "aws_s3_object" "kube_ca_cert" {
   bucket = var.config_s3_bucket
   key    = "KubeConfig/cluster-ca-cert.pem"
 }
@@ -7,6 +7,12 @@ data "aws_s3_object" "kube_ca_cert" {
 data "aws_s3_object" "kube_ca_key" {
   bucket = var.config_s3_bucket
   key    = "KubeConfig/cluster-ca-key.pem"
+} */
+
+data "aws_caller_identity" "current" {}
+
+data "aws_ssm_parameter" "lb_cert_id" {
+  name = var.certid_ssmname
 }
 
 /*
@@ -30,14 +36,19 @@ resource "tls_self_signed_cert" "lb_self_cert" {
     "server_auth",
   ]
 }
-*/
 
 resource "aws_acm_certificate" "lb_cert_new" {
-  /* private_key      = tls_private_key.lb-cert-key.private_key_pem
-  certificate_body = tls_self_signed_cert.lb_self_cert.cert_pem */
+  private_key      = tls_private_key.lb-cert-key.private_key_pem
+  certificate_body = tls_self_signed_cert.lb_self_cert.cert_pem
+}
+
+
+*/
+
+/* resource "aws_acm_certificate" "lb_cert_new" {
   private_key      = data.aws_s3_object.kube_ca_key.body
   certificate_body = data.aws_s3_object.kube_ca_cert.body
-}
+} 
 
 resource "aws_default_vpc" "default_vpc" {
   tags = {
@@ -67,9 +78,11 @@ resource "aws_default_subnet" "default_1c" {
   tags = {
     Name = "TerraformManaged"
   }
-}
+} */
 
-resource "aws_security_group" "alb_sg" {
+resource "aws_security_group" "nlb_sg" {
+  vpc_id = var.vpc_id
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -82,20 +95,36 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_kube_master_ports" {
-  security_group_id = aws_security_group.alb_sg.id
+resource "aws_vpc_security_group_ingress_rule" "allow_https" {
+  security_group_id = aws_security_group.nlb_sg.id
   cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 8443
+  from_port         = 443
   ip_protocol       = "tcp"
-  to_port           = 8443
+  to_port           = 443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_http" {
+  security_group_id = aws_security_group.nlb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  ip_protocol       = "tcp"
+  to_port           = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
+  security_group_id = aws_security_group.nlb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
 }
 
 resource "aws_lb" "master_lb" {
   name               = "masterlb"
   internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [aws_default_subnet.default_1a.id, aws_default_subnet.default_1b.id, aws_default_subnet.default_1c.id]
+  load_balancer_type = "network"
+  security_groups    = [aws_security_group.nlb_sg.id]
+  subnets            = [var.public_subnet_1a, var.public_subnet_1b, var.public_subnet_1c]
 
   tags = {
     Name = "TerraformManaged"
@@ -106,24 +135,35 @@ resource "aws_lb" "master_lb" {
   }
 }
 
-resource "aws_lb_listener" "master_listener" {
+resource "aws_lb_listener" "master_https_listener" {
   load_balancer_arn = aws_lb.master_lb.arn
-  port              = "8443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.lb_cert_new.arn
+  port              = "443"
+  protocol          = "TCP"
+  #ssl_policy        = "ELBSecurityPolicy-2016-08"
+  #certificate_arn   = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.master_tg.arn
+    target_group_arn = aws_lb_target_group.master_tls_tg.arn
   }
 }
 
-resource "aws_lb_target_group" "master_tg" {
-  name     = "mastertg"
-  port     = 8443
-  protocol = "HTTPS"
-  vpc_id   = aws_default_vpc.default_vpc.id
+resource "aws_lb_listener" "master_ssh_listener" {
+  load_balancer_arn = aws_lb.master_lb.arn
+  port              = "22"
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.master_ssh_tg.arn
+  }
+}
+
+resource "aws_lb_target_group" "master_tls_tg" {
+  name     = "mastertlstg"
+  port     = 443
+  protocol = "TCP"
+  vpc_id   = var.vpc_id
   health_check {
     path     = "/livez"
     port     = 6443
@@ -132,9 +172,25 @@ resource "aws_lb_target_group" "master_tg" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "master_tg_attachment" {
-  target_group_arn = aws_lb_target_group.master_tg.arn
+resource "aws_lb_target_group" "master_ssh_tg" {
+  name     = "mastersshtg"
+  port     = 22
+  protocol = "TCP"
+  vpc_id   = var.vpc_id
+  health_check {
+    port     = 22
+    protocol = "TCP"
+  }
+}
+
+resource "aws_lb_target_group_attachment" "master_tg_tls_attachment" {
+  target_group_arn = aws_lb_target_group.master_tls_tg.arn
   target_id        = var.master_node
   port             = 6443
 }
 
+resource "aws_lb_target_group_attachment" "master_tg_tcp_attachment" {
+  target_group_arn = aws_lb_target_group.master_ssh_tg.arn
+  target_id        = var.master_node
+  port             = 22
+}
