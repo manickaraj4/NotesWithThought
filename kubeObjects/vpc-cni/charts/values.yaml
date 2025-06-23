@@ -94,6 +94,7 @@ env:
   ENABLE_IMDS_ONLY_MODE: "false"
   ENABLE_V6_EGRESS: "true"
   ENABLE_V4_EGRESS: "false"
+  #AWS_EC2_ENDPOINT: "https://ec2.${region}.api.aws" $ not working
 
 # Add env from configMap or from secrets
 # - name: ENV_VAR1

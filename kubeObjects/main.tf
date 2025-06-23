@@ -13,6 +13,8 @@ provider "aws" {
   region = var.aws_region
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_ecr_authorization_token" "ecr_token" {
 }
 
@@ -28,6 +30,26 @@ resource "kubernetes_secret" "docker_token_secret" {
     ".dockerconfigjson" = jsonencode({
       auths = {
         "602401143452.dkr.ecr.${var.aws_region}.amazonaws.com" = {
+          "username" = "AWS"
+          "auth"     = "${data.aws_ecr_authorization_token.ecr_token.authorization_token}"
+        }
+      }
+    })
+  }
+}
+
+resource "kubernetes_secret" "docker_token_secret_current_account" {
+  metadata {
+    name      = "docker-cfg-current-account"
+    namespace = "kube-system"
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com" = {
           "username" = "AWS"
           "auth"     = "${data.aws_ecr_authorization_token.ecr_token.authorization_token}"
         }
@@ -101,10 +123,10 @@ resource "helm_release" "aws_vpc_cni" {
 
 module "go_server_deployment" {
   depends_on = [helm_release.aws_vpc_cni]
-  source = "./goserverdeployment"
+  source     = "./goserverdeployment"
 
   aws_region = var.aws_region
-} 
+}
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
@@ -112,18 +134,18 @@ module "go_server_deployment" {
   }
 } */
 
-/* resource "helm_release" "aws_lb_controller" {
-  name       = "aws-load-balancer-controller"
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
+resource "helm_release" "aws_lb_controller" {
+  name            = "aws-load-balancer-controller"
+  repository      = "https://aws.github.io/eks-charts"
+  chart           = "aws-load-balancer-controller"
+  cleanup_on_fail = true
+  atomic          = true
+  namespace       = "kube-system"
 
-  set = [
-    {
-      name  = "clusterName"
-      value = "kubernetes"
-    }
+  values = [
+    yamlencode(yamldecode(templatefile("${path.module}/awsloadbalancercontroller/charts/values.yaml", { region = "${var.aws_region}", repo = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller", tag = "v2.13.3", imagepullsecrets = "docker-cfg-current-account" })))
   ]
-} */
+}
 
 /* resource "helm_release" "nginx_ingress" {
   name       = "ingress-nginx"

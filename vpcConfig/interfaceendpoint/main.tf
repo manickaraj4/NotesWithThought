@@ -102,19 +102,25 @@ resource "aws_vpc_endpoint" "ec2_private_endpoint" {
   ]
 }
 
+resource "aws_vpc_endpoint" "elasticloadbalancing_private_endpoint" {
+  vpc_id              = var.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.elasticloadbalancing"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  ip_address_type     = "ipv4"
+
+  security_group_ids = [
+    aws_security_group.allow_https.id
+  ]
+
+  subnet_ids = [
+    var.public_subnet_1a
+  ]
+}
+
 resource "aws_vpc_endpoint" "s3_private_endpoint" {
   vpc_id            = var.vpc_id
   service_name      = "com.amazonaws.${var.aws_region}.s3"
   vpc_endpoint_type = "Gateway"
-  #private_dns_enabled = true
-  #ip_address_type = "ipv4"
   route_table_ids = [var.private_route_table_id]
-
-  /*   security_group_ids = [
-    aws_security_group.allow_https.id
-  ] */
-
-  /*   subnet_ids = [
-    var.public_subnet_1a
-  ] */
-}
+} 

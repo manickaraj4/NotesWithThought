@@ -93,6 +93,13 @@ resource "kubernetes_deployment" "go_server_deployment" {
 resource "kubernetes_service" "post_service" {
   metadata {
     name = "posts-app"
+    annotations = {
+      #"service.beta.kubernetes.io/aws-load-balancer-ssl-ports" : "https"
+      #"service.beta.kubernetes.io/aws-load-balancer-ssl-cert" : "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
+      "service.beta.kubernetes.io/aws-load-balancer-type" : "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout" : "60"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance"
+    }
   }
   spec {
     selector = {
@@ -102,13 +109,15 @@ resource "kubernetes_service" "post_service" {
     port {
       port        = 80
       target_port = 8080
+      protocol    = "TCP"
     }
 
-    type = "ClusterIP"
+    #load_balancer_class = "service.k8s.aws/nlb"
+    type              = "LoadBalancer"
   }
 }
 
-resource "kubernetes_ingress_v1" "post_service_ingress" {
+/* resource "kubernetes_ingress_v1" "post_service_ingress" {
   metadata {
     name = "postservice-ingress"
     annotations = {
@@ -116,22 +125,22 @@ resource "kubernetes_ingress_v1" "post_service_ingress" {
       "alb.ingress.kubernetes.io/target-type"      = "instance"
       "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 80}]"
       "alb.ingress.kubernetes.io/certificate-arn"  = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
-      /*  "alb.ingress.kubernetes.io/healthcheck-path" = "/posts"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/posts"
       "alb.ingress.kubernetes.io/healthcheck-port" = "8080"
-      "alb.ingress.kubernetes.io/success-codes"    = "200-404" */
+      "alb.ingress.kubernetes.io/success-codes"    = "200-404" 
     }
   }
 
   spec {
     ingress_class_name = "alb"
-    /*     default_backend {
+    default_backend {
       service {
         name = "posts-app"
         port {
           number = 80
         }
       }
-    } */
+    } 
 
     rule {
       host = "posts-app.manicks.xyz"
@@ -151,9 +160,4 @@ resource "kubernetes_ingress_v1" "post_service_ingress" {
       }
     }
   }
-}
-
-
-
-
-
+} */
