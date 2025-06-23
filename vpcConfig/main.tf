@@ -26,8 +26,20 @@ module "vpc" {
   aws_region = var.aws_region
 }
 
+module "vpce_endpoints" {
+  source = "./interfaceendpoint"
+
+  aws_region             = var.aws_region
+  vpc_id                 = module.vpc.vpc_id
+  private_route_table_id = module.vpc.private_route_table_id
+  public_subnet_1a       = module.vpc.public_subnet_1a
+  public_subnet_1b       = module.vpc.public_subnet_1b
+  public_subnet_1c       = module.vpc.public_subnet_1c
+}
+
 module "servers" {
-  source = "./instances"
+  depends_on = [module.vpce_endpoints]
+  source     = "./instances"
 
   aws_region        = var.aws_region
   config_s3_bucket  = var.config_s3_bucket

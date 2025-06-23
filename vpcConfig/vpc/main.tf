@@ -60,7 +60,7 @@ resource "aws_subnet" "public_subnet_1a" {
   vpc_id                  = aws_vpc.kubernetes_vpc.id
   cidr_block              = "172.31.0.0/20"
   availability_zone       = "${var.aws_region}a"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     ManagedBy = "terraform"
@@ -71,7 +71,7 @@ resource "aws_subnet" "public_subnet_1b" {
   vpc_id                  = aws_vpc.kubernetes_vpc.id
   cidr_block              = "172.31.16.0/20"
   availability_zone       = "${var.aws_region}b"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     ManagedBy = "terraform"
@@ -82,7 +82,7 @@ resource "aws_subnet" "public_subnet_1c" {
   vpc_id                  = aws_vpc.kubernetes_vpc.id
   cidr_block              = "172.31.32.0/20"
   availability_zone       = "${var.aws_region}c"
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 
   tags = {
     ManagedBy = "terraform"
@@ -93,8 +93,8 @@ resource "aws_subnet" "private_subnet_1a" {
   vpc_id                          = aws_vpc.kubernetes_vpc.id
   cidr_block                      = "172.31.48.0/20"
   availability_zone               = "${var.aws_region}a"
-  assign_ipv6_address_on_creation = true
-  enable_dns64                    = true
+  assign_ipv6_address_on_creation = false
+  enable_dns64                    = false
   ipv6_cidr_block                 = cidrsubnet(aws_vpc.kubernetes_vpc.ipv6_cidr_block, 4, 1)
   map_public_ip_on_launch         = false
 
@@ -107,8 +107,8 @@ resource "aws_subnet" "private_subnet_1b" {
   vpc_id                          = aws_vpc.kubernetes_vpc.id
   cidr_block                      = "172.31.64.0/20"
   availability_zone               = "${var.aws_region}b"
-  assign_ipv6_address_on_creation = true
-  enable_dns64                    = true
+  assign_ipv6_address_on_creation = false
+  enable_dns64                    = false
   ipv6_cidr_block                 = cidrsubnet(aws_vpc.kubernetes_vpc.ipv6_cidr_block, 4, 2)
   map_public_ip_on_launch         = false
 
@@ -121,8 +121,8 @@ resource "aws_subnet" "private_subnet_1c" {
   vpc_id                          = aws_vpc.kubernetes_vpc.id
   cidr_block                      = "172.31.80.0/20"
   availability_zone               = "${var.aws_region}c"
-  assign_ipv6_address_on_creation = true
-  enable_dns64                    = true
+  assign_ipv6_address_on_creation = false
+  enable_dns64                    = false
   ipv6_cidr_block                 = cidrsubnet(aws_vpc.kubernetes_vpc.ipv6_cidr_block, 4, 3)
   map_public_ip_on_launch         = false
 

@@ -78,12 +78,6 @@ provider "kubernetes" {
   source = "./vpc-cni"
 } */
 
-/* module "go_server_deployment" {
-  source = "./goserverdeployment"
-
-  aws_region = var.aws_region
-} */
-
 provider "helm" {
   kubernetes = {
     host     = "https://${data.aws_ssm_parameter.lb_name.value}:443"
@@ -93,14 +87,23 @@ provider "helm" {
 }
 
 resource "helm_release" "aws_vpc_cni" {
-  name       = "aws-vpc-cni"
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-vpc-cni"
-  namespace  = "kube-system"
+  name            = "aws-vpc-cni"
+  repository      = "https://aws.github.io/eks-charts"
+  chart           = "aws-vpc-cni"
+  namespace       = "kube-system"
+  cleanup_on_fail = true
+  atomic          = true
 
   values = [
     yamlencode(yamldecode(templatefile("${path.module}/vpc-cni/charts/values.yaml", { region = "${var.aws_region}" })))
   ]
+}
+
+module "go_server_deployment" {
+  depends_on = [helm_release.aws_vpc_cni]
+  source = "./goserverdeployment"
+
+  aws_region = var.aws_region
 } 
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {

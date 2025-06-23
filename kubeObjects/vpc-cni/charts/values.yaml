@@ -13,7 +13,7 @@ init:
     region: ${region}
     endpoint: ecr
     account: "602401143452"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Set to use custom image
     override:
     # override: "repo/org/image:tag"
@@ -21,6 +21,8 @@ init:
     DISABLE_TCP_EARLY_DEMUX: "false"
     ENABLE_IPv6: "false"
     ENABLE_V6_EGRESS: "true"
+    ENABLE_V4_EGRESS: "false"
+    
   securityContext:
     privileged: true
   resources: {}
@@ -33,7 +35,7 @@ nodeAgent:
     region: ${region}
     endpoint: ecr
     account: "602401143452"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     # Set to use custom image
     override:
     # override: "repo/org/image:tag"
@@ -58,7 +60,7 @@ image:
   region: ${region}
   endpoint: ecr
   account: "602401143452"
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   # Set to use custom image
   override:
   # override: "repo/org/image:tag"
@@ -91,6 +93,7 @@ env:
   NETWORK_POLICY_ENFORCING_MODE: "standard"
   ENABLE_IMDS_ONLY_MODE: "false"
   ENABLE_V6_EGRESS: "true"
+  ENABLE_V4_EGRESS: "false"
 
 # Add env from configMap or from secrets
 # - name: ENV_VAR1
@@ -132,7 +135,8 @@ cniConfig:
   enabled: false
   fileContents: ""
 
-imagePullSecrets: []
+imagePullSecrets: 
+  - name: docker-cfg
 
 fullnameOverride: "aws-node"
 
@@ -163,7 +167,7 @@ livenessProbe:
   exec:
     command:
       - /app/grpc-health-probe
-      - '-addr=:50051'
+      - '-addr=:50052'
       - '-connect-timeout=5s'
       - '-rpc-timeout=5s'
   initialDelaySeconds: 60
@@ -174,7 +178,7 @@ readinessProbe:
   exec:
     command:
       - /app/grpc-health-probe
-      - '-addr=:50051'
+      - '-addr=:50052'
       - '-connect-timeout=5s'
       - '-rpc-timeout=5s'
   initialDelaySeconds: 1
