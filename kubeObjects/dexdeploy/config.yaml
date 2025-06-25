@@ -1,0 +1,5 @@
+#config:
+issuer: ${issuer_url}
+storage:
+  type: memory
+enablePasswordDB: true

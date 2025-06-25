@@ -176,6 +176,7 @@ module "go_server_deployment" {
 } */
 
 resource "helm_release" "nginx_ingress" {
+  depends_on      = [helm_release.flannel_cni]
   name            = "ingress-nginx"
   repository      = "https://kubernetes.github.io/ingress-nginx"
   chart           = "ingress-nginx"
@@ -202,25 +203,101 @@ resource "helm_release" "nginx_ingress" {
   ]
 }
 
-/* resource "kubernetes_manifest" "test-crd" {
-  manifest = {
-    apiVersion = "elbv2.k8s.aws/v1beta1"
-    kind       = "TargetGroupBinding"
+resource "helm_release" "dex_chart" {
+  depends_on      = [helm_release.nginx_ingress]
+  name            = "dex"
+  repository      = "https://charts.dexidp.io"
+  chart           = "dex"
+  cleanup_on_fail = true
+  atomic          = true
 
-    metadata = {
-      name = "default-tgb"
+  set = [
+    {
+      name  = "image.repository"
+      value = "docker.io/dexidp/dex"
+    },
+/*     {
+      name  = "config"
+      value = jsonencode(yamldecode(templatefile("${path.module}/dexdeploy/config.yaml", { issuer_url = "https://posts-app.${var.domain}/issuer" })))
+    }, */
+    {
+      name  = "config.issuer"
+      value = "https://posts-app.${var.domain}/issuer"
+    },
+    {
+      name  = "config.enablePasswordDB"
+      value = true
+    },
+    {
+      name  = "config.storage.type"
+      value = "memory"
+    },
+    {
+      name  = "config.web.http"
+      value = "0.0.0.0:5556"
+    },
+    {
+      name  = "config.staticPasswords[0].email"
+      value = "admin@example.com"
+    },
+    {
+      name  = "config.staticPasswords[0].hash"
+      value = "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    },
+    {
+      name  = "config.staticPasswords[0].username"
+      value = "admin"
+    },
+    {
+      name  = "config.staticPasswords[0].userID"
+      value = "08a8684b-db88-4b73-90a9-3cd1661f5466"
+    },
+    {
+      name  = "config.staticClients[0].id"
+      value = "private-client"
+    },
+    {
+      name  = "config.staticClients[0].secret"
+      value = "app-secret"
+    },
+/*     {
+      name  = "config.staticClients[0].public"
+      value = true
+    }, */
+    {
+      name  = "config.staticClients[0].name"
+      value = "Private Client"
+    },
+            {
+      name  = "config.staticClients[0].redirectURIs[0]"
+      value = "https://posts-app.${var.domain}/issuer/callback"
+    },
+    {
+      name  = "config.oauth2.passwordConnector"
+      value = "local"
+    },
+    {
+      name  = "ingress.hosts[0].host"
+      value = "posts-app.${var.domain}"
+    },
+    {
+      name  = "ingress.hosts[0].paths[0].path"
+      value = "/issuer"
+    },
+    {
+      name  = "ingress.hosts[0].paths[0].pathType"
+      value = "Prefix"
+    },
+    {
+      name  = "ingress.enabled"
+      value = true
+    },
+    {
+      name  = "ingress.className"
+      value = "nginx"
     }
-
-    spec = {
-      targetGroupName = ""
-
-      serviceRef = {
-        name = "posts-app"
-        port = "80"
-      }
-    }
-  }
-} */
+  ]
+}
 
 
 
