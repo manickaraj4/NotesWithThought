@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.16"
+      version = "~> 6.0.0"
     }
   }
 
@@ -108,7 +108,8 @@ provider "helm" {
   }
 }
 
-resource "helm_release" "aws_vpc_cni" {
+# ditching VPC and moved to flannel
+/* resource "helm_release" "aws_vpc_cni" {
   name            = "aws-vpc-cni"
   repository      = "https://aws.github.io/eks-charts"
   chart           = "aws-vpc-cni"
@@ -119,14 +120,39 @@ resource "helm_release" "aws_vpc_cni" {
   values = [
     yamlencode(yamldecode(templatefile("${path.module}/vpc-cni/charts/values.yaml", { region = "${var.aws_region}" })))
   ]
+} */
+
+# Flannel CNI plugin
+resource "helm_release" "flannel_cni" {
+  name            = "flannel"
+  repository      = "https://flannel-io.github.io/flannel"
+  chart           = "flannel"
+  namespace       = "kube-system"
+  cleanup_on_fail = true
+  atomic          = true
+
+  set = [
+/*     {
+      name  = "flannel.backend"
+      value = "host-gw"
+    }, */
+    {
+      name  = "flannel.image.repository" 
+      value = "docker.io/flannel/flannel"
+    },
+    {
+      name  = "flannel.image_cni.repository" 
+      value = "docker.io/flannel/flannel-cni-plugin"
+    }
+  ]
 }
 
 module "go_server_deployment" {
-  depends_on = [helm_release.aws_vpc_cni]
+  depends_on = [helm_release.flannel_cni]
   source     = "./goserverdeployment"
 
   aws_region = var.aws_region
-}
+} 
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
@@ -134,7 +160,8 @@ module "go_server_deployment" {
   }
 } */
 
-resource "helm_release" "aws_lb_controller" {
+/* resource "helm_release" "aws_lb_controller" {
+  depends_on = [helm_release.aws_vpc_cni]
   name            = "aws-load-balancer-controller"
   repository      = "https://aws.github.io/eks-charts"
   chart           = "aws-load-balancer-controller"
@@ -145,9 +172,9 @@ resource "helm_release" "aws_lb_controller" {
   values = [
     yamlencode(yamldecode(templatefile("${path.module}/awsloadbalancercontroller/charts/values.yaml", { region = "${var.aws_region}", repo = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller", tag = "v2.13.3", imagepullsecrets = "docker-cfg-current-account" })))
   ]
-}
+} */
 
-/* resource "helm_release" "nginx_ingress" {
+resource "helm_release" "nginx_ingress" {
   name       = "ingress-nginx"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
@@ -156,11 +183,19 @@ resource "helm_release" "aws_lb_controller" {
 
   set = [
     {
-      name  = "service.type"
+      name  = "controller.service.type"
       value = "ClusterIP"
+    },
+    {
+      name  = "controller.service.nodePorts.http"
+      value = "30007"
+    },
+    {
+      name  = "controller.service.nodePorts.https"
+      value = "30008"
     }
   ] 
-} */
+} 
 
 /* resource "kubernetes_manifest" "test-crd" {
   manifest = {

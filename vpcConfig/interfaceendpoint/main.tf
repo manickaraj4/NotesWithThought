@@ -86,7 +86,7 @@ resource "aws_vpc_endpoint" "ecr_api_private_endpoint" {
   ]
 }
 
-resource "aws_vpc_endpoint" "ec2_private_endpoint" {
+/* resource "aws_vpc_endpoint" "ec2_private_endpoint" {
   vpc_id              = var.vpc_id
   service_name        = "com.amazonaws.${var.aws_region}.ec2"
   vpc_endpoint_type   = "Interface"
@@ -100,9 +100,9 @@ resource "aws_vpc_endpoint" "ec2_private_endpoint" {
   subnet_ids = [
     var.public_subnet_1a
   ]
-}
+} */
 
-resource "aws_vpc_endpoint" "elasticloadbalancing_private_endpoint" {
+/* resource "aws_vpc_endpoint" "elasticloadbalancing_private_endpoint" {
   vpc_id              = var.vpc_id
   service_name        = "com.amazonaws.${var.aws_region}.elasticloadbalancing"
   vpc_endpoint_type   = "Interface"
@@ -116,7 +116,7 @@ resource "aws_vpc_endpoint" "elasticloadbalancing_private_endpoint" {
   subnet_ids = [
     var.public_subnet_1a
   ]
-}
+} */
 
 resource "aws_vpc_endpoint" "s3_private_endpoint" {
   vpc_id            = var.vpc_id

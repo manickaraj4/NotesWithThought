@@ -1,0 +1,1 @@
+aws ec2 modify-instance-metadata-options --instance-id eks_node_id --http-put-response-hop-limit 3
