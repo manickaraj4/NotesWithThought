@@ -93,7 +93,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
 resource "kubernetes_service" "post_service" {
   metadata {
     name = "posts-app"
-      /* annotations = {
+    /* annotations = {
       "service.beta.kubernetes.io/aws-load-balancer-ssl-ports" : "https"
       "service.beta.kubernetes.io/aws-load-balancer-ssl-cert" : "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
       "service.beta.kubernetes.io/aws-load-balancer-type" : "nlb"
@@ -113,14 +113,14 @@ resource "kubernetes_service" "post_service" {
     }
 
     #load_balancer_class = "service.k8s.aws/nlb"
-    type              = "ClusterIP"
+    type = "ClusterIP"
   }
 }
 
-/* resource "kubernetes_ingress_v1" "post_service_ingress" {
+resource "kubernetes_ingress_v1" "post_service_ingress" {
   metadata {
     name = "postservice-ingress"
-    annotations = {
+    /*     annotations = {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "instance"
       "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 80}]"
@@ -128,22 +128,22 @@ resource "kubernetes_service" "post_service" {
       "alb.ingress.kubernetes.io/healthcheck-path" = "/posts"
       "alb.ingress.kubernetes.io/healthcheck-port" = "8080"
       "alb.ingress.kubernetes.io/success-codes"    = "200-404" 
-    }
+    } */
   }
 
   spec {
-    ingress_class_name = "alb"
-    default_backend {
+    ingress_class_name = "nginx"
+    /*     default_backend {
       service {
         name = "posts-app"
         port {
           number = 80
         }
       }
-    } 
+    }  */
 
     rule {
-      host = "posts-app.manicks.xyz"
+      host = "posts-app.${var.domain}"
       http {
         path {
           backend {
@@ -154,10 +154,41 @@ resource "kubernetes_service" "post_service" {
               }
             }
           }
-          path = "/posts-app"
+          path      = "/posts"
           path_type = "Prefix"
         }
       }
     }
   }
-} */
+} 
+
+resource "kubernetes_ingress_v1" "kubernetes_apiserver_ingress" {
+  metadata {
+    name = "kubernetes-apiserver-ingress"
+    annotations = {
+      "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
+      #"nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
+    }
+  }
+
+  spec {
+    ingress_class_name = "nginx"
+
+    rule {
+      http {
+        path {
+          backend {
+            service {
+              name = "kubernetes"
+              port {
+                number = 443
+              }
+            }
+          }
+          path      = "/"
+          path_type = "Prefix"
+        }
+      }
+    }
+  }
+} 

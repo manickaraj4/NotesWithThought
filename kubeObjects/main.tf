@@ -18,7 +18,7 @@ data "aws_caller_identity" "current" {}
 data "aws_ecr_authorization_token" "ecr_token" {
 }
 
-resource "kubernetes_secret" "docker_token_secret" {
+/* resource "kubernetes_secret" "docker_token_secret" {
   metadata {
     name      = "docker-cfg"
     namespace = "kube-system"
@@ -36,7 +36,7 @@ resource "kubernetes_secret" "docker_token_secret" {
       }
     })
   }
-}
+} */
 
 resource "kubernetes_secret" "docker_token_secret_current_account" {
   metadata {
@@ -86,7 +86,7 @@ data "aws_ssm_parameter" "lb_name" {
 }
 
 provider "kubernetes" {
-  host     = "https://${data.aws_ssm_parameter.lb_name.value}:443"
+  host     = "https://${data.aws_ssm_parameter.lb_name.value}:6443"
   insecure = true
   token    = data.aws_ssm_parameter.kube_static_token.value
   /*
@@ -102,7 +102,7 @@ provider "kubernetes" {
 
 provider "helm" {
   kubernetes = {
-    host     = "https://${data.aws_ssm_parameter.lb_name.value}:443"
+    host     = "https://${data.aws_ssm_parameter.lb_name.value}:6443"
     insecure = true
     token    = data.aws_ssm_parameter.kube_static_token.value
   }
@@ -132,16 +132,16 @@ resource "helm_release" "flannel_cni" {
   atomic          = true
 
   set = [
-/*     {
+    /*     {
       name  = "flannel.backend"
       value = "host-gw"
     }, */
     {
-      name  = "flannel.image.repository" 
+      name  = "flannel.image.repository"
       value = "docker.io/flannel/flannel"
     },
     {
-      name  = "flannel.image_cni.repository" 
+      name  = "flannel.image_cni.repository"
       value = "docker.io/flannel/flannel-cni-plugin"
     }
   ]
@@ -151,8 +151,9 @@ module "go_server_deployment" {
   depends_on = [helm_release.flannel_cni]
   source     = "./goserverdeployment"
 
+  domain     = var.domain
   aws_region = var.aws_region
-} 
+}
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
@@ -175,16 +176,20 @@ module "go_server_deployment" {
 } */
 
 resource "helm_release" "nginx_ingress" {
-  name       = "ingress-nginx"
-  repository = "https://kubernetes.github.io/ingress-nginx"
-  chart      = "ingress-nginx"
+  name            = "ingress-nginx"
+  repository      = "https://kubernetes.github.io/ingress-nginx"
+  chart           = "ingress-nginx"
   cleanup_on_fail = true
-  atomic = true
+  atomic          = true
 
   set = [
     {
       name  = "controller.service.type"
-      value = "ClusterIP"
+      value = "NodePort"
+    },
+    {
+      name  = "controller.kind"
+      value = "DaemonSet"
     },
     {
       name  = "controller.service.nodePorts.http"
@@ -194,8 +199,8 @@ resource "helm_release" "nginx_ingress" {
       name  = "controller.service.nodePorts.https"
       value = "30008"
     }
-  ] 
-} 
+  ]
+}
 
 /* resource "kubernetes_manifest" "test-crd" {
   manifest = {

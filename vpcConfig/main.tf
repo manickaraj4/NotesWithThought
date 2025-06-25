@@ -8,9 +8,16 @@ terraform {
       source  = "hashicorp/time"
       version = "0.13.1"
     }
+    http = {
+      source  = "hashicorp/http"
+      version = "3.5.0"
+    }
   }
 
   required_version = ">= 1.2.0"
+}
+
+provider "http" {
 }
 
 provider "aws" {
@@ -56,12 +63,21 @@ module "lb" {
   aws_region       = var.aws_region
   config_s3_bucket = var.config_s3_bucket
   master_node      = module.servers.master_node_id
+  worker_node      = module.servers.worker_node_id
   vpc_id           = module.vpc.vpc_id
   certid_ssmname   = var.cert_id_ssm_name
   public_subnet_1a = module.vpc.public_subnet_1a
   public_subnet_1b = module.vpc.public_subnet_1b
   public_subnet_1c = module.vpc.public_subnet_1c
 }
+
+/* module "dns_record_update" {
+  source = "./dnssetup"
+
+  lb_dns = module.lb.lb_dns
+  record = "posts-app"
+  domain = "${var.domain}"
+} */
 
 module "ecrrepo" {
   source = "./ecr"

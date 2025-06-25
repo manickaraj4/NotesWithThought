@@ -103,12 +103,12 @@ resource "aws_vpc_security_group_ingress_rule" "allow_https" {
   to_port           = 443
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_http" {
+resource "aws_vpc_security_group_ingress_rule" "allow_kubernetes_api_server" {
   security_group_id = aws_security_group.nlb_sg.id
   cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
+  from_port         = 6443
   ip_protocol       = "tcp"
-  to_port           = 80
+  to_port           = 6443
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
@@ -120,11 +120,12 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
 }
 
 resource "aws_lb" "master_lb" {
-  name               = "masterlb"
-  internal           = false
-  load_balancer_type = "network"
-  security_groups    = [aws_security_group.nlb_sg.id]
-  subnets            = [var.public_subnet_1a, var.public_subnet_1b, var.public_subnet_1c]
+  name                             = "masterlb"
+  internal                         = false
+  load_balancer_type               = "network"
+  security_groups                  = [aws_security_group.nlb_sg.id]
+  subnets                          = ["${var.public_subnet_1a}", "${var.public_subnet_1b}", "${var.public_subnet_1c}"]
+  enable_cross_zone_load_balancing = true
 
   tags = {
     Name = "TerraformManaged"
@@ -137,10 +138,8 @@ resource "aws_lb" "master_lb" {
 
 resource "aws_lb_listener" "master_https_listener" {
   load_balancer_arn = aws_lb.master_lb.arn
-  port              = "443"
+  port              = "6443"
   protocol          = "TCP"
-  #ssl_policy        = "ELBSecurityPolicy-2016-08"
-  #certificate_arn   = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
 
   default_action {
     type             = "forward"
@@ -158,6 +157,7 @@ resource "aws_lb_listener" "master_ssh_listener" {
     target_group_arn = aws_lb_target_group.master_ssh_tg.arn
   }
 }
+
 
 resource "aws_lb_target_group" "master_tls_tg" {
   name     = "mastertlstg"
@@ -194,3 +194,36 @@ resource "aws_lb_target_group_attachment" "master_tg_tcp_attachment" {
   target_id        = var.master_node
   port             = 22
 }
+
+resource "aws_lb_listener" "worker_https_listener" {
+  load_balancer_arn = aws_lb.master_lb.arn
+  port              = "443"
+  protocol          = "TLS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.worker_nginx_tg.arn
+  }
+}
+
+resource "aws_lb_target_group" "worker_nginx_tg" {
+  name     = "wokertg"
+  port     = 443
+  protocol = "TLS"
+  vpc_id   = var.vpc_id
+  health_check {
+    path     = "/livez"
+    port     = 30008
+    protocol = "HTTP"
+    matcher  = "200,202"
+  }
+}
+
+resource "aws_lb_target_group_attachment" "worker_https_attachment" {
+  target_group_arn = aws_lb_target_group.worker_nginx_tg.arn
+  target_id        = var.worker_node
+  port             = 30008
+}
+

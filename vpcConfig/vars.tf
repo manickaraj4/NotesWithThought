@@ -13,3 +13,8 @@ variable "cert_id_ssm_name" {
   type    = string
 }
 
+variable "domain" {
+  default = "manicks.xyz"
+  type    = string
+}
+

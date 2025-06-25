@@ -10,6 +10,10 @@ variable "master_node" {
   type = string
 }
 
+variable "worker_node" {
+  type = string
+}
+
 variable "vpc_id" {
   type = string
 }

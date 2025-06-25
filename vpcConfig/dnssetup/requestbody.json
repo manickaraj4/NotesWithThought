@@ -1,0 +1,11 @@
+{
+    "force": true,
+    "items": [
+        {
+        "type": "CNAME",
+        "name": "${record}",
+        "ttl": 600,
+        "cname": "${lb_dns}"
+        }
+    ]
+}
