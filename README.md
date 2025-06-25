@@ -1,6 +1,7 @@
 # NotesWithThought
 
 A k8s cluster with minimal footprint on AWS. Designed to be run on low cost (Using free tier) 
+
 Note: Some services used might incur cost.
 
 ## Steps to deploy:
