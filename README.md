@@ -4,6 +4,8 @@ A k8s cluster with minimal footprint on AWS. Designed to be run on low cost (Usi
 
 Note: Some services used might incur cost.
 
+Still in progress...
+
 ## Steps to deploy:
 
 1. Get a AWS account and export the session keys for user/Role on CLI
