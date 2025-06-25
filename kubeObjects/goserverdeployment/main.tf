@@ -93,13 +93,13 @@ resource "kubernetes_deployment" "go_server_deployment" {
 resource "kubernetes_service" "post_service" {
   metadata {
     name = "posts-app"
-    annotations = {
-      #"service.beta.kubernetes.io/aws-load-balancer-ssl-ports" : "https"
-      #"service.beta.kubernetes.io/aws-load-balancer-ssl-cert" : "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
+      /* annotations = {
+      "service.beta.kubernetes.io/aws-load-balancer-ssl-ports" : "https"
+      "service.beta.kubernetes.io/aws-load-balancer-ssl-cert" : "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
       "service.beta.kubernetes.io/aws-load-balancer-type" : "nlb"
       "service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout" : "60"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance"
-    }
+    } */
   }
   spec {
     selector = {
@@ -113,7 +113,7 @@ resource "kubernetes_service" "post_service" {
     }
 
     #load_balancer_class = "service.k8s.aws/nlb"
-    type              = "LoadBalancer"
+    type              = "ClusterIP"
   }
 }
 

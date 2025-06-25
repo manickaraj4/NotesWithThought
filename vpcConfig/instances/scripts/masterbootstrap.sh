@@ -51,6 +51,8 @@ sudo systemctl enable --now docker
 cat <<EOF | sudo tee /etc/kubernetes/apiserver-custom.yaml
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
+networking:
+  podSubnet: "10.244.0.0/16"
 apiServer:
   extraArgs:
   - name: "token-auth-file"
