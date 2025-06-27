@@ -60,7 +60,7 @@ resource "aws_subnet" "public_subnet_1a" {
   vpc_id                  = aws_vpc.kubernetes_vpc.id
   cidr_block              = "172.31.0.0/20"
   availability_zone       = "${var.aws_region}a"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   tags = {
     ManagedBy = "terraform"
@@ -71,7 +71,7 @@ resource "aws_subnet" "public_subnet_1b" {
   vpc_id                  = aws_vpc.kubernetes_vpc.id
   cidr_block              = "172.31.16.0/20"
   availability_zone       = "${var.aws_region}b"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   tags = {
     ManagedBy = "terraform"
@@ -82,7 +82,7 @@ resource "aws_subnet" "public_subnet_1c" {
   vpc_id                  = aws_vpc.kubernetes_vpc.id
   cidr_block              = "172.31.32.0/20"
   availability_zone       = "${var.aws_region}c"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   tags = {
     ManagedBy = "terraform"

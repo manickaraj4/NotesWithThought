@@ -143,7 +143,7 @@ resource "kubernetes_ingress_v1" "post_service_ingress" {
     }  */
 
     rule {
-      host = "posts-app.${var.domain}"
+      host = "posts.${var.domain}"
       http {
         path {
           backend {
@@ -173,8 +173,9 @@ resource "kubernetes_ingress_v1" "kubernetes_apiserver_ingress" {
 
   spec {
     ingress_class_name = "nginx"
-
+    
     rule {
+      host = "kubeadmin.${var.domain}"
       http {
         path {
           backend {

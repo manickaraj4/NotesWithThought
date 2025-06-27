@@ -11,19 +11,19 @@ output "worker_node_private_address" {
 }
 
 output "ssm_endpoint" {
-  value = module.vpce_endpoints.vpce_ssm_dns
+  value = var.deploy_interface_endpoints ? module.vpce_endpoints.vpce_ssm_dns : null
 }
 
 output "kms_endpoint" {
-  value = module.vpce_endpoints.vpce_kms_dns
+  value = var.deploy_interface_endpoints ? module.vpce_endpoints.vpce_kms_dns : null
 }
 
 output "ecrdkr_endpoint" {
-  value = module.vpce_endpoints.vpce_ecr_dcr_dns
+  value = var.deploy_interface_endpoints ? module.vpce_endpoints.vpce_ecr_dcr_dns : null
 }
 
 output "ecrapi_endpoint" {
-  value = module.vpce_endpoints.vpce_ecr_api_dns
+  value = var.deploy_interface_endpoints ? module.vpce_endpoints.vpce_ecr_api_dns : null
 }
 
 /* output "s3_endpoint" {

@@ -34,6 +34,7 @@ module "vpc" {
 }
 
 module "vpce_endpoints" {
+  count  = var.deploy_interface_endpoints ? 1 : 0
   source = "./interfaceendpoint"
 
   aws_region             = var.aws_region
@@ -48,13 +49,16 @@ module "servers" {
   depends_on = [module.vpce_endpoints]
   source     = "./instances"
 
-  aws_region        = var.aws_region
-  config_s3_bucket  = var.config_s3_bucket
-  lb_sg_id          = module.lb.alb_sg
-  vpc_id            = module.vpc.vpc_id
-  private_subnet_1a = module.vpc.private_subnet_1a
-  private_subnet_1b = module.vpc.private_subnet_1b
-  private_subnet_1c = module.vpc.private_subnet_1c
+  aws_region       = var.aws_region
+  config_s3_bucket = var.config_s3_bucket
+  lb_sg_id         = module.lb.alb_sg
+  vpc_id           = module.vpc.vpc_id
+
+  # deploy instances on public subnet if interface endpoints are not enabled.
+  subnet_1a         = var.deploy_interface_endpoints ? module.vpc.private_subnet_1a : module.vpc.public_subnet_1a
+  subnet_1b         = var.deploy_interface_endpoints ? module.vpc.private_subnet_1b : module.vpc.public_subnet_1b
+  subnet_1c         = var.deploy_interface_endpoints ? module.vpc.private_subnet_1c : module.vpc.public_subnet_1c
+  in_private_subnet = var.deploy_interface_endpoints ? true : false
 }
 
 module "lb" {
@@ -71,13 +75,13 @@ module "lb" {
   public_subnet_1c = module.vpc.public_subnet_1c
 }
 
-/* module "dns_record_update" {
+module "dns_record_update" {
   source = "./dnssetup"
 
   lb_dns = module.lb.lb_dns
-  record = "posts-app"
-  domain = "${var.domain}"
-} */
+  record = "*"
+  domain = var.domain
+}
 
 module "ecrrepo" {
   source = "./ecr"

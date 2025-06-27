@@ -18,3 +18,7 @@ variable "domain" {
   type    = string
 }
 
+variable "deploy_interface_endpoints" {
+  default = false
+  type    = bool
+}

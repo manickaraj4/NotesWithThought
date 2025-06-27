@@ -1,0 +1,7 @@
+[
+  {
+    "type": "CNAME",
+    "name": "${record}",
+    "cname": "${lb_dns}"
+  }
+]

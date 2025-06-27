@@ -38,6 +38,13 @@ resource "aws_iam_role_policy" "ecr_pull_cache_policy" {
   policy = templatefile("${path.module}/scripts/pullcacheecrpolicy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}" })
 }
 
+resource "aws_iam_role_policy" "ebs_csi_policy" {
+  name = "ebs_csi"
+  role = aws_iam_role.ec2_instance_role.id
+
+  policy = file("${path.module}/scripts/ebscsidriverpolicy.json")
+}
+
 resource "aws_iam_role_policy" "ssm_policy" {
   name = "ssm_policy"
   role = aws_iam_role.ec2_instance_role.id
@@ -115,9 +122,9 @@ resource "aws_instance" "master_server" {
   user_data                   = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
   iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
   user_data_replace_on_change = true
-  subnet_id                   = var.private_subnet_1a
-  associate_public_ip_address = false
-  ipv6_address_count          = 1
+  subnet_id                   = var.subnet_1a
+  associate_public_ip_address = !var.in_private_subnet ? true : false
+  ipv6_address_count          = var.in_private_subnet ? 1 : 0
 
   tags = {
     Name      = "masterServer",
@@ -134,9 +141,9 @@ resource "aws_instance" "worker_node" {
   user_data                   = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
   iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
   user_data_replace_on_change = true
-  subnet_id                   = var.private_subnet_1b
-  associate_public_ip_address = false
-  ipv6_address_count          = 1
+  subnet_id                   = var.subnet_1b
+  associate_public_ip_address = !var.in_private_subnet ? true : false
+  ipv6_address_count          = var.in_private_subnet ? 1 : 0
 
   tags = {
     Name      = "workerNode",

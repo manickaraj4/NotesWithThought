@@ -29,15 +29,19 @@ variable "vpc_id" {
   type = string
 }
 
-variable "private_subnet_1a" {
+variable "subnet_1a" {
   type = string
 }
 
-variable "private_subnet_1b" {
+variable "subnet_1b" {
   type = string
 }
 
-variable "private_subnet_1c" {
+variable "subnet_1c" {
   type = string
+}
+
+variable "in_private_subnet" {
+  type = bool
 }
 
