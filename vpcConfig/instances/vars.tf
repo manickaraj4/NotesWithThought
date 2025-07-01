@@ -3,13 +3,23 @@ variable "ssh_key_pub" {
   type    = string
 }
 
-variable "ami" {
+variable "arm64_ami" {
+  default = "ami-05aadd54edb2b586e" # Using Amazon Linux 2 
+  type    = string
+}
+
+variable "x86_ami" {
   default = "ami-00b7ea845217da02c" # Using Amazon Linux 2 
   type    = string
 }
 
-variable "instance_type" {
-  default = "t3.small"
+variable "master_instance_type" {
+  default = "t4g.small"
+  type    = string
+}
+
+variable "worker_instance_type" {
+  default = "t3.micro"
   type    = string
 }
 

@@ -1,0 +1,28 @@
+pipeline {
+    agent { node { label 'ec2slave' } } 
+
+    parameters {
+        string(defaultValue: 'ap-south-1', description: 'Region of ECR Repo', name: 'AwsRegion')
+        string(description: 'Account of ECR Repo', name: 'ECRAccount')
+    }
+
+    stages {
+        stage('Checkout') {
+            sshagent(credentials: ['jenkins']) {
+                checkoutGit {}
+            }
+        }
+
+        stage('BuildImage') {
+            steps {
+                sh '''#!/usr/bin/bash
+                    aws ecr get-login-password --region ${params.AwsRegion} | docker login --username AWS --password-stdin ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com
+                    cd NotesWithThought/simpleGoServer
+                    docker build -t simpleGoServer .
+                    docker images
+                '''
+            }
+        }
+
+    }
+}

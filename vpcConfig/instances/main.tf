@@ -115,13 +115,13 @@ resource "aws_vpc_security_group_ingress_rule" "allow_lb_sg" {
 }
 
 resource "aws_instance" "master_server" {
-  ami                         = var.ami
-  instance_type               = var.instance_type
+  ami                         = var.arm64_ami
+  instance_type               = var.master_instance_type
   key_name                    = aws_key_pair.deployer.id
   vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
   user_data                   = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
   iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
-  user_data_replace_on_change = true
+  # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1a
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
@@ -134,8 +134,8 @@ resource "aws_instance" "master_server" {
 
 resource "aws_instance" "worker_node" {
   depends_on                  = [time_sleep.wait_300_seconds]
-  ami                         = var.ami
-  instance_type               = var.instance_type
+  ami                         = var.x86_ami
+  instance_type               = var.worker_instance_type
   key_name                    = aws_key_pair.deployer.id
   vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
   user_data                   = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
@@ -151,17 +151,20 @@ resource "aws_instance" "worker_node" {
   }
 }
 
-/*
-resource "aws_instance" "bastion_node" {
-  ami                    = "ami-002c8f09d560aa82e"
-  instance_type          = "t2.micro"
+resource "aws_instance" "jenkins_slave_node" {
+  ami                    = var.x86_ami
+  instance_type          = var.worker_instance_type
   key_name               = aws_key_pair.deployer.id
-  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_ssh.id]
-  user_data              = file("${path.module}/scripts/bastionbootstrap.sh")
-  disable_api_termination = true
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
+  user_data              = file("${path.module}/scripts/jenkinsslavebootstrap.sh")
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
+  user_data_replace_on_change = true
+  subnet_id                   = var.subnet_1c
+  associate_public_ip_address = !var.in_private_subnet ? true : false
+  ipv6_address_count          = var.in_private_subnet ? 1 : 0
+
   tags = {
-    Name      = "BastionHost",
+    Name      = "JenkinsSlaveHost",
     ManagedBy = "Terraform"
   }
 }
-*/

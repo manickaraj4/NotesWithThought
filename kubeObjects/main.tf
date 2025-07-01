@@ -147,13 +147,13 @@ resource "helm_release" "flannel_cni" {
   ]
 }
 
-module "go_server_deployment" {
+/* module "go_server_deployment" {
   depends_on = [helm_release.flannel_cni]
   source     = "./goserverdeployment"
 
   domain     = var.domain
   aws_region = var.aws_region
-}
+} */
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
@@ -189,6 +189,55 @@ resource "helm_release" "aws_ebs_csi_driver" {
 /*   values = [
     yamlencode(yamldecode(templatefile("${path.module}/awsloadbalancercontroller/charts/values.yaml", { region = "${var.aws_region}", repo = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller", tag = "v2.13.3", imagepullsecrets = "docker-cfg-current-account" })))
   ] */
+}
+
+resource "helm_release" "jenkins_deployment" {
+  depends_on      = [helm_release.flannel_cni, helm_release.aws_ebs_csi_driver, helm_release.nginx_ingress, kubernetes_storage_class_v1.ebs_storage_class]
+  name            = "jenkins"
+  repository      = "https://charts.jenkins.io"
+  chart           = "jenkins"
+  cleanup_on_fail = true
+  atomic          = true
+  namespace       = "kube-system"
+
+  set = [
+    {
+      name  = "controller.admin.createSecret"
+      value = true
+    },
+    {
+      name  = "controller.ingress.enabled"
+      value = true
+    },
+    {
+      name  = "controller.ingress.ingressClassName"
+      value = "nginx"
+    },
+    {
+      name  = "controller.ingress.hostName"
+      value = "jenkins.${var.domain}"
+    },
+    {
+      name  = "controller.nodeSelector.kubernetes\\.io\\/arch"
+      value = "arm64"
+    },
+/*     {
+      name  = "controller.affinity"
+      value = yamlencode(yamldecode(file("${path.module}/jenkinsdeploy/affinityselector.yaml")))
+    }, */
+    {
+      name  = "persistence.enabled"
+      value = true
+    },
+    {
+      name  = "persistence.storageClass"
+      value = "ebs-sc"
+    }
+  ]
+
+/*   values = [
+    yamlencode(yamldecode(templatefile("${path.module}/jenkinsdeploy/charts/values.yaml", { domain = "jenkins.${var.domain}"})))
+  ]  */
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -229,7 +278,7 @@ resource "kubernetes_storage_class_v1" "ebs_storage_class" {
   }
 }
 
-
+/*
 resource "helm_release" "keycloak_chart" {
   depends_on      = [helm_release.nginx_ingress, helm_release.aws_ebs_csi_driver, kubernetes_storage_class_v1.ebs_storage_class]
   name            = "keycloak"
@@ -285,6 +334,7 @@ resource "helm_release" "keycloak_chart" {
     }
   ]
 } 
+*/
 
 /*
 resource "helm_release" "dex_chart" {

@@ -10,6 +10,10 @@ output "worker_node_private_address" {
   value = module.servers.worker_node_private_address
 }
 
+output "jenkins_slave_node_private_address" {
+  value = module.servers.jenkins_slave_node_private_address
+}
+
 output "ssm_endpoint" {
   value = var.deploy_interface_endpoints ? module.vpce_endpoints.vpce_ssm_dns : null
 }

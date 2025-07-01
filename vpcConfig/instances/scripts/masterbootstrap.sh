@@ -93,3 +93,7 @@ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scrip
 chmod 700 get_helm.sh
 ./get_helm.sh
 
+for node in $( kubectl get nodes -o json | jq -r '.items[] | select(.metadata.labels | has("node-role.kubernetes.io/control-plane")).metadata.labels."kubernetes.io/hostname"')
+  do kubectl taint node $node node-role.kubernetes.io/control-plane:NoSchedule- 
+done
+
