@@ -16,9 +16,7 @@ pipeline {
         stage('BuildImage') {
             steps {
                 sh "aws ecr get-login-password --region ${params.AwsRegion} | docker login --username AWS --password-stdin ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com"
-                sh "cd simpleGoserver"
-                sh "ls -la"
-                sh "docker build -t simplegoserver ."
+                sh "cd simpleGoserver && ls -l && docker build -t simplegoserver ."
                 sh "docker images"
                 sh "docker tag simplegoserver ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest"
                 sh "docker push ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest"
