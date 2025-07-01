@@ -178,7 +178,7 @@ resource "helm_release" "flannel_cni" {
 
 
 resource "helm_release" "aws_ebs_csi_driver" {
-  depends_on = [helm_release.flannel_cni]
+  depends_on      = [helm_release.flannel_cni]
   name            = "aws-ebs-csi-driver"
   repository      = "oci://ghcr.io/deliveryhero/helm-charts"
   chart           = "aws-ebs-csi-driver"
@@ -186,7 +186,7 @@ resource "helm_release" "aws_ebs_csi_driver" {
   atomic          = true
   namespace       = "kube-system"
 
-/*   values = [
+  /*   values = [
     yamlencode(yamldecode(templatefile("${path.module}/awsloadbalancercontroller/charts/values.yaml", { region = "${var.aws_region}", repo = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller", tag = "v2.13.3", imagepullsecrets = "docker-cfg-current-account" })))
   ] */
 }
@@ -221,7 +221,7 @@ resource "helm_release" "jenkins_deployment" {
       name  = "controller.nodeSelector.kubernetes\\.io\\/arch"
       value = "arm64"
     },
-/*     {
+    /*     {
       name  = "controller.affinity"
       value = yamlencode(yamldecode(file("${path.module}/jenkinsdeploy/affinityselector.yaml")))
     }, */
@@ -235,7 +235,7 @@ resource "helm_release" "jenkins_deployment" {
     }
   ]
 
-/*   values = [
+  /*   values = [
     yamlencode(yamldecode(templatefile("${path.module}/jenkinsdeploy/charts/values.yaml", { domain = "jenkins.${var.domain}"})))
   ]  */
 }
@@ -269,7 +269,7 @@ resource "helm_release" "nginx_ingress" {
 }
 
 resource "kubernetes_storage_class_v1" "ebs_storage_class" {
-  depends_on    = [helm_release.aws_ebs_csi_driver]
+  depends_on          = [helm_release.aws_ebs_csi_driver]
   storage_provisioner = "ebs.csi.aws.com"
   volume_binding_mode = "WaitForFirstConsumer"
 

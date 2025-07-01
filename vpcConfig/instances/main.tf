@@ -115,12 +115,12 @@ resource "aws_vpc_security_group_ingress_rule" "allow_lb_sg" {
 }
 
 resource "aws_instance" "master_server" {
-  ami                         = var.arm64_ami
-  instance_type               = var.master_instance_type
-  key_name                    = aws_key_pair.deployer.id
-  vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
-  user_data                   = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
-  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
+  ami                    = var.arm64_ami
+  instance_type          = var.master_instance_type
+  key_name               = aws_key_pair.deployer.id
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
+  user_data              = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
   # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1a
   associate_public_ip_address = !var.in_private_subnet ? true : false
@@ -133,13 +133,13 @@ resource "aws_instance" "master_server" {
 }
 
 resource "aws_instance" "worker_node" {
-  depends_on                  = [time_sleep.wait_300_seconds]
-  ami                         = var.x86_ami
-  instance_type               = var.worker_instance_type
-  key_name                    = aws_key_pair.deployer.id
-  vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
-  user_data                   = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
-  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
+  depends_on             = [time_sleep.wait_300_seconds]
+  ami                    = var.x86_ami
+  instance_type          = var.worker_instance_type
+  key_name               = aws_key_pair.deployer.id
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
+  user_data              = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
   # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1b
   associate_public_ip_address = !var.in_private_subnet ? true : false
@@ -151,13 +151,29 @@ resource "aws_instance" "worker_node" {
   }
 }
 
+resource "aws_iam_role" "jenkins_ec2_instance_role" {
+  name               = "jenkins_ec2_instance_role"
+  path               = "/"
+  assume_role_policy = file("${path.module}/scripts/assumeroleec2policy.json")
+}
+
+resource "aws_iam_instance_profile" "jenkins_ec2_instance_profile" {
+  name = "jenkins_ec2_instance_profile"
+  role = aws_iam_role.jenkins_ec2_instance_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy_attach" {
+  role       = aws_iam_role.jenkins_ec2_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+}
+
 resource "aws_instance" "jenkins_slave_node" {
   ami                    = var.x86_ami
   instance_type          = var.worker_instance_type
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
   user_data              = file("${path.module}/scripts/jenkinsslavebootstrap.sh")
-  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
+  iam_instance_profile   = aws_iam_instance_profile.jenkins_ec2_instance_profile.id
   # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1c
   associate_public_ip_address = !var.in_private_subnet ? true : false

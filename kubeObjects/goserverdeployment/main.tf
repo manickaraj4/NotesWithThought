@@ -160,7 +160,7 @@ resource "kubernetes_ingress_v1" "post_service_ingress" {
       }
     }
   }
-} 
+}
 
 resource "kubernetes_ingress_v1" "kubernetes_apiserver_ingress" {
   metadata {
@@ -173,7 +173,7 @@ resource "kubernetes_ingress_v1" "kubernetes_apiserver_ingress" {
 
   spec {
     ingress_class_name = "nginx"
-    
+
     rule {
       host = "kubeadmin.${var.domain}"
       http {

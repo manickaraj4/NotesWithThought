@@ -50,7 +50,7 @@ resource "null_resource" "lb_dnsrecord_update" {
   }
 
   provisioner "local-exec" {
-    when    = destroy
+    when = destroy
     environment = {
       REQUEST_BODY = self.triggers.request_body
     }
