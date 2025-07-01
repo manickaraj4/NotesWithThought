@@ -8,8 +8,8 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            sshagent(credentials: ['jenkins']) {
-                checkoutGit {}
+            steps {
+                checkout scm
             }
         }
 
@@ -20,6 +20,8 @@ pipeline {
                     cd NotesWithThought/simpleGoServer
                     docker build -t simpleGoServer .
                     docker images
+                    docker tag simpleGoServer ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
+                    docker push ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
                 '''
             }
         }
