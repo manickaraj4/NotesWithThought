@@ -18,9 +18,9 @@ pipeline {
                 sh '''#!/usr/bin/bash
                     aws ecr get-login-password --region ${params.AwsRegion} | docker login --username AWS --password-stdin ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com
                     cd NotesWithThought/simpleGoServer
-                    docker build -t simpleGoServer .
+                    docker build -t simplegoserver .
                     docker images
-                    docker tag simpleGoServer ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
+                    docker tag simplegoserver ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
                     docker push ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
                 '''
             }

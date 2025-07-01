@@ -4,6 +4,7 @@ sudo yum update
 sudo setenforce 0
 sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
+sudo yum install -y git 
 sudo yum install -y docker
 sudo systemctl enable --now docker
 
