@@ -15,14 +15,13 @@ pipeline {
 
         stage('BuildImage') {
             steps {
-                sh '''#!/usr/bin/bash
-                    aws ecr get-login-password --region ${params.AwsRegion} | docker login --username AWS --password-stdin ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com
-                    cd NotesWithThought/simpleGoServer
-                    docker build -t simplegoserver .
-                    docker images
-                    docker tag simplegoserver ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
-                    docker push ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest
-                '''
+                sh "aws ecr get-login-password --region ${params.AwsRegion} | docker login --username AWS --password-stdin ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com"
+                sh "cd NotesWithThought/simpleGoServer"
+                sh "ls -l ; pwd"
+                sh "docker build -t simplegoserver ."
+                sh "docker images"
+                sh "docker tag simplegoserver ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest"
+                sh "docker push ${params.ECRAccount}.dkr.ecr.${params.AwsRegion}.amazonaws.com/apprepo:latest"
             }
         }
 

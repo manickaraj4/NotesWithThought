@@ -140,7 +140,7 @@ resource "aws_instance" "worker_node" {
   vpc_security_group_ids      = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
   user_data                   = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
   iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.id
-  user_data_replace_on_change = true
+  # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1b
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
@@ -158,7 +158,7 @@ resource "aws_instance" "jenkins_slave_node" {
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
   user_data              = file("${path.module}/scripts/jenkinsslavebootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
-  user_data_replace_on_change = true
+  # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1c
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
