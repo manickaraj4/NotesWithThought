@@ -14,4 +14,4 @@ jobs:
       - name: Call remote endpoint of the Jenkins URL
         run: |
           set -e
-          curl -v -X GET "https://jenkins.${{ vars.DOMAIN }}/job/SamplePipeline/buildWithParameters?token=${{ secrets.JENKINSTOKEN }}&AwsRegion=${{ vars.AWSREGION }}&ECRAccount=${{ vars.AWSACCOUNT }}"
+          curl -v -X GET "https://jenkins.${{ vars.DOMAIN }}/job/SamplePipeline/buildWithParameters?token=${{ secrets.JENKINSTOKEN }}&AwsRegion=${{ vars.AWSREGION }}&ECRAccount=${{ vars.AWSACCOUNT }}" -H "Authorization: Basic $(echo githubuser:${{ secrets.JENKINSTOKEN }} | base64)"

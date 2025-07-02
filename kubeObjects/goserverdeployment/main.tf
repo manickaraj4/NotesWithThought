@@ -7,6 +7,14 @@ data "aws_ssm_parameter" "lb_cert_id" {
   name = "DomainCertId"
 }
 
+data "aws_ssm_parameter" "github_oauth_id" {
+  name = "GithubOAuthID"
+}
+
+data "aws_ssm_parameter" "github_oauth_secret" {
+  name = "GithubOAuthSecret"
+}
+
 resource "kubernetes_secret" "docker_token_secret-default" {
   metadata {
     name      = "docker-cfg-default"
@@ -62,6 +70,19 @@ resource "kubernetes_deployment" "go_server_deployment" {
           name  = "goserver"
           port {
             container_port = 8080
+          }
+
+          env {
+            name = "GITHUB_OAUTH2_CLIENT_ID" 
+            value = "${data.aws_ssm_parameter.github_oauth_id.value}"
+          }
+          env {
+            name = "GOOGLE_OAUTH2_CLIENT_SECRET" 
+            value = "${data.aws_ssm_parameter.github_oauth_secret.value}""
+          }
+          env {
+            name = "DOMAIN" 
+            value = "${var.domain}"
           }
 
           resources {
@@ -154,7 +175,7 @@ resource "kubernetes_ingress_v1" "post_service_ingress" {
               }
             }
           }
-          path      = "/posts"
+          path      = "/"
           path_type = "Prefix"
         }
       }

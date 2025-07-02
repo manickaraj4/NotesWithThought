@@ -147,13 +147,13 @@ resource "helm_release" "flannel_cni" {
   ]
 }
 
-/* module "go_server_deployment" {
+module "go_server_deployment" {
   depends_on = [helm_release.flannel_cni]
   source     = "./goserverdeployment"
 
   domain     = var.domain
   aws_region = var.aws_region
-} */
+} 
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {

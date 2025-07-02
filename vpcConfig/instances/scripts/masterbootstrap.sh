@@ -71,7 +71,7 @@ sudo kubeadm init --config /etc/kubernetes/apiserver-custom.yaml
 
 mkdir -p /home/ec2-user/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
-sudo chown 1000:1000 /home/ec2-user/.kube/config
+sudo chown -R 1000:1000 /home/ec2-user/.kube
 
 sudo cat /etc/kubernetes/admin.conf | grep client-key-data | cut -d ":" -f 2 | cut -d " " -f 2 | base64 -d > /home/ec2-user/.kube/client-key.pem
 sudo cat /etc/kubernetes/admin.conf | grep client-certificate-data | cut -d ":" -f 2 | cut -d " " -f 2 | base64 -d > /home/ec2-user/.kube/client-cert.pem
