@@ -32,7 +32,7 @@ var (
     domain  = os.Getenv("DOMAIN")
     config oauth2.Config
     verifier *oidc.IDTokenVerifier
-    ctx Context
+    ctx  context.Context
 )
 
 func randString(nByte int) (string, error) {
