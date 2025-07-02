@@ -92,7 +92,7 @@ func main() {
 		ClientSecret: clientSecret,
 		Endpoint:    oauth2.Endpoint{
 			AuthURL:  "https://github.com/login/oauth/authorize",
-			TokenURL: "https://github.com/login/oauth/token",
+			TokenURL: "https://github.com/login/oauth/id_token",
 		},
 		RedirectURL:  redirectUrl,
 		Scopes:   scopes,
