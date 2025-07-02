@@ -68,11 +68,6 @@ func main() {
         log.Fatal(err)
     }
 
-    log.Println("Reading Body")
-
-    res2B, _ := json.Marshal(providerConfig)
-    log.Println(string(res2B))
-
     provider := providerConfig.NewProvider(ctx)
 /*     if err != nil {
 		log.Fatal(err)
@@ -150,6 +145,11 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
         return
     }
+    
+    log.Println("Reading Body")
+
+    res2B, _ := json.Marshal(oauth2Token)
+    log.Println(string(res2B))
 
     rawIDToken, ok := oauth2Token.Extra("id_token").(string)
     if !ok {

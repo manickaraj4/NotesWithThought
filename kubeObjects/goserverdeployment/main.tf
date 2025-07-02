@@ -79,7 +79,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
             value = "${data.aws_ssm_parameter.github_oauth_id.value}"
           }
           env {
-            name = "GOOGLE_OAUTH2_CLIENT_SECRET" 
+            name = "GITHUB_OAUTH2_CLIENT_SECRET" 
             value = "${data.aws_ssm_parameter.github_oauth_secret.value}"
           }
           env {
