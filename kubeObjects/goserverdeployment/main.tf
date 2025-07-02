@@ -9,10 +9,12 @@ data "aws_ssm_parameter" "lb_cert_id" {
 
 data "aws_ssm_parameter" "github_oauth_id" {
   name = "GithubOAuthID"
+  with_decryption = true
 }
 
 data "aws_ssm_parameter" "github_oauth_secret" {
   name = "GithubOAuthSecret"
+  with_decryption = true
 }
 
 resource "kubernetes_secret" "docker_token_secret-default" {
@@ -78,7 +80,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
           }
           env {
             name = "GOOGLE_OAUTH2_CLIENT_SECRET" 
-            value = "${data.aws_ssm_parameter.github_oauth_secret.value}""
+            value = "${data.aws_ssm_parameter.github_oauth_secret.value}"
           }
           env {
             name = "DOMAIN" 
