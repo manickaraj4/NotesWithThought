@@ -162,7 +162,7 @@ resource "aws_iam_instance_profile" "jenkins_ec2_instance_profile" {
   role = aws_iam_role.jenkins_ec2_instance_role.name
 }
 
-resource "aws_iam_role_policy_attachment" "cni_policy_attach" {
+resource "aws_iam_role_policy_attachment" "ECRFullAccess_policy_attach" {
   role       = aws_iam_role.jenkins_ec2_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
 }

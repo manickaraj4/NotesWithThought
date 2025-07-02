@@ -24,9 +24,19 @@ var (
 func main() {
     http.HandleFunc("/posts", postsHandler)
     http.HandleFunc("/posts/", postHandler)
+    http.HandleFunc("/", fallbackHandler)
 
     fmt.Println("Server is running at http://localhost:8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func fallbackHandler(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case "GET":
+        http.Redirect(w, r, "/posts", http.StatusMovedPermanently)
+    default:
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+    }
 }
 
 func postsHandler(w http.ResponseWriter, r *http.Request) {

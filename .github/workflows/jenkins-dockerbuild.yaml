@@ -1,0 +1,17 @@
+name: Build Go Server Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - simpleGoserver/**
+
+jobs:
+  start_docker_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call remote endpoint of the Jenkins URL
+        run: |
+          set -e
+          curl -v -X GET "https://jenkins.${{ vars.DOMAIN }}/job/SamplePipeline/buildWithParameters?token=${{ secrets.JENKINSTOKEN }}&AwsRegion=${{ vars.AWSREGION }}&ECRAccount=${{ vars.AWSACCOUNT }}"
