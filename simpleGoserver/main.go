@@ -32,6 +32,7 @@ var (
     domain  = os.Getenv("DOMAIN")
     config oauth2.Config
     verifier *oidc.IDTokenVerifier
+    ctx Context
 )
 
 func randString(nByte int) (string, error) {
@@ -54,7 +55,7 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 }
 
 func main() {
-    // ctx := context.Background()
+    ctx = context.Background()
     resp, err := http.Get("https://github.com/login/oauth/.well-known/openid-configuration")
     if err != nil {
         log.Fatal(err)
@@ -72,7 +73,7 @@ func main() {
     res2B, _ := json.Marshal(providerConfig)
     log.Println(string(res2B))
 
-    provider := providerConfig.NewProvider(context.Background())
+    provider := providerConfig.NewProvider(ctx)
 /*     if err != nil {
 		log.Fatal(err)
 	} */
@@ -143,7 +144,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    oauth2Token, err := config.Exchange(context.Background(), r.URL.Query().Get("code"))
+    oauth2Token, err := config.Exchange(ctx, r.URL.Query().Get("code"))
 
     if err != nil {
         http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
@@ -156,7 +157,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    idToken, err := verifier.Verify(context.Background(), rawIDToken)
+    idToken, err := verifier.Verify(ctx, rawIDToken)
     if err != nil {
         http.Error(w, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
         return
