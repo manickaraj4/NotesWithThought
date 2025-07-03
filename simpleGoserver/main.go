@@ -25,8 +25,8 @@ type Post struct {
 }
 
 type User struct {
-	id    int    `json:"id"`
-	login string `json:"login"`
+	Id    int    `json:"id"`
+	Login string `json:"login"`
 }
 
 var (
@@ -318,8 +318,8 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
 		//userDetailsHeader := fmt.Sprintf("%s %d", userDetails.login, userDetails.id)
 
-		sessionManager.Put(r.Context(), "login", userDetails.login)
-		sessionManager.Put(r.Context(), "id", userDetails.id)
+		sessionManager.Put(r.Context(), "login", userDetails.Login)
+		sessionManager.Put(r.Context(), "id", userDetails.Id)
 
 		token, expiry, err := sessionManager.Commit(r.Context())
 
