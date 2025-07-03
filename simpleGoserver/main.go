@@ -73,6 +73,9 @@ func getUserDetails(token string) (User, error) {
 	}
 	defer resp.Body.Close()
 
+	log.Println("response")
+	log.Println(resp.StatusCode)
+
 	/* 	body, err := io.ReadAll(resp.Body)
 	   	if err != nil {
 	   		log.Fatalf("Error reading response body: %v", err)
@@ -309,6 +312,9 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal("Failed to fetch user details", err)
 		}
+
+		res2C, _ := json.Marshal(userDetails)
+		log.Println(string(res2C))
 
 		//userDetailsHeader := fmt.Sprintf("%s %d", userDetails.login, userDetails.id)
 
