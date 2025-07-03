@@ -24,6 +24,11 @@ type Post struct {
 	Body string `json:"body"`
 }
 
+type User struct {
+	id    int    `json:"id"`
+	login string `json:"body"`
+}
+
 var (
 	posts        = make(map[int]Post)
 	nextID       = 1
@@ -47,6 +52,38 @@ func randString(nByte int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
+func getUserDetails(token string) (User, error) {
+
+	var user User
+
+	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
+
+	if err != nil {
+		log.Fatalf("Error creating request: %v", err)
+	}
+
+	req.Header.Add("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Fatalf("Error performing request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("Error reading response body: %v", err)
+	}
+
+	json.Unmarshal(body, &user)
+
+	return user, nil
+
+}
+
 /* func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	c := &http.Cookie{
 		Name:     name,
@@ -61,7 +98,7 @@ func randString(nByte int) (string, error) {
 func main() {
 
 	sessionManager = scs.New()
-	sessionManager.Lifetime = 24 * time.Hour
+	sessionManager.Lifetime = 5 * time.Minute
 	sessionManager.Cookie.Domain = domain
 	sessionManager.Cookie.HttpOnly = true
 	sessionManager.Cookie.Secure = true
@@ -119,6 +156,7 @@ func main() {
 	mux.HandleFunc("/auth/github/callback", oauthHandler)
 	mux.HandleFunc("/auth/login", loginHandler)
 	mux.HandleFunc("/logout", logoutHandler)
+	mux.HandleFunc("/healthcheck", healthcheckHandler)
 
 	fmt.Println("Server is running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(mux)))
@@ -129,6 +167,14 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	sessionManager.Clear(r.Context())
 	sessionManager.Put(r.Context(), "authenticated", false)
 	http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+
+}
+
+func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
+
+	res := make(map[string]string)
+	res["status"] = "ok"
+	json.NewEncoder(w).Encode(res)
 
 }
 
@@ -239,29 +285,47 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		} */
 
-		userInfo, err := provider.UserInfo(ctx, oauth2.StaticTokenSource(oauth2Token))
-		if err != nil {
-			http.Error(w, "Failed to get userinfo: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
+		/* 		userInfo, err := provider.UserInfo(ctx, oauth2.StaticTokenSource(oauth2Token))
+		   		if err != nil {
+		   			http.Error(w, "Failed to get userinfo: "+err.Error(), http.StatusInternalServerError)
+		   			return
+		   		}
 
-		resp := struct {
-			OAuth2Token *oauth2.Token
-			UserInfo    *oidc.UserInfo
-		}{oauth2Token, userInfo}
-		data, err := json.MarshalIndent(resp, "", "    ")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		   		resp := struct {
+		   			OAuth2Token *oauth2.Token
+		   			UserInfo    *oidc.UserInfo
+		   		}{oauth2Token, userInfo}
+		   		data, err := json.MarshalIndent(resp, "", "    ")
+		   		if err != nil {
+		   			http.Error(w, err.Error(), http.StatusInternalServerError)
+		   			return
+		   		}
 
-		log.Println("Reading UserInfo")
-
-		res2C, _ := json.Marshal(data)
-		log.Println(string(res2C))
+		   		log.Println("Reading UserInfo") */
+		/*
+			res2C, _ := json.Marshal(data)
+			log.Println(string(res2C)) */
 		sessionManager.Put(r.Context(), "authenticated", true)
 		sessionManager.Put(r.Context(), "oauthtoken", oauth2Token.AccessToken)
-		sessionManager.Put(r.Context(), "userinfo", data)
+		//sessionManager.Put(r.Context(), "userinfo", data)
+		userDetails, err := getUserDetails(oauth2Token.AccessToken)
+		if err != nil {
+			log.Fatal("Failed to fetch user details", err)
+		}
+
+		//userDetailsHeader := fmt.Sprintf("%s %d", userDetails.login, userDetails.id)
+
+		sessionManager.Put(r.Context(), "login", userDetails.login)
+		sessionManager.Put(r.Context(), "id", userDetails.id)
+
+		token, expiry, err := sessionManager.Commit(r.Context())
+
+		if err != nil {
+			log.Fatal("Failed to store session", err)
+		}
+
+		sessionManager.WriteSessionCookie(r.Context(), w, token, expiry)
+
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 
 		/*     resp := struct {
