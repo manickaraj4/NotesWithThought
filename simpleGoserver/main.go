@@ -166,7 +166,6 @@ func main() {
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionManager.Clear(r.Context())
-	//sessionManager.Put(r.Context(), "authenticated", false)
 	http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 
 }
@@ -181,7 +180,7 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetBool(r.Context(), "authenticated") {
+	if sessionManager.Token(r.Context()) != "" {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
@@ -231,8 +230,6 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 	if sessionManager.Token(r.Context()) != "" {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
-
-		//sessionManager.Put(r.Context(), "authenticated", false)
 		state := sessionManager.GetString(r.Context(), "state")
 
 		if r.URL.Query().Get("state") != state {
@@ -306,7 +303,6 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		/*
 			res2C, _ := json.Marshal(data)
 			log.Println(string(res2C)) */
-		//sessionManager.Put(r.Context(), "authenticated", true)
 		sessionManager.Put(r.Context(), "oauthtoken", oauth2Token.AccessToken)
 		//sessionManager.Put(r.Context(), "userinfo", data)
 		userDetails, err := getUserDetails(oauth2Token.AccessToken)
