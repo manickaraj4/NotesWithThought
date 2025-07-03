@@ -80,9 +80,9 @@ func getUserDetails(token string) (User, error) {
 	   	if err != nil {
 	   		log.Fatalf("Error reading response body: %v", err)
 	   	} */
+	//json.Unmarshal(body, &user)
 
 	json.NewDecoder(resp.Body).Decode(&user)
-	//json.Unmarshal(body, &user)
 
 	return user, nil
 
