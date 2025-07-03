@@ -26,7 +26,7 @@ type Post struct {
 
 type User struct {
 	id    int    `json:"id"`
-	login string `json:"body"`
+	login string `json:"login"`
 }
 
 var (
@@ -73,12 +73,13 @@ func getUserDetails(token string) (User, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Error reading response body: %v", err)
-	}
+	/* 	body, err := io.ReadAll(resp.Body)
+	   	if err != nil {
+	   		log.Fatalf("Error reading response body: %v", err)
+	   	} */
 
-	json.Unmarshal(body, &user)
+	json.NewDecoder(resp.Body).Decode(&user)
+	//json.Unmarshal(body, &user)
 
 	return user, nil
 
@@ -165,7 +166,7 @@ func main() {
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionManager.Clear(r.Context())
-	sessionManager.Put(r.Context(), "authenticated", false)
+	//sessionManager.Put(r.Context(), "authenticated", false)
 	http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 
 }
@@ -205,7 +206,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func fallbackHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetBool(r.Context(), "authenticated") {
+	if sessionManager.Token(r.Context()) != "" {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
 		http.Redirect(w, r, "/auth/login", http.StatusMovedPermanently)
@@ -227,11 +228,11 @@ func fallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetBool(r.Context(), "authenticated") {
+	if sessionManager.Token(r.Context()) != "" {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
 
-		sessionManager.Put(r.Context(), "authenticated", false)
+		//sessionManager.Put(r.Context(), "authenticated", false)
 		state := sessionManager.GetString(r.Context(), "state")
 
 		if r.URL.Query().Get("state") != state {
@@ -305,7 +306,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		/*
 			res2C, _ := json.Marshal(data)
 			log.Println(string(res2C)) */
-		sessionManager.Put(r.Context(), "authenticated", true)
+		//sessionManager.Put(r.Context(), "authenticated", true)
 		sessionManager.Put(r.Context(), "oauthtoken", oauth2Token.AccessToken)
 		//sessionManager.Put(r.Context(), "userinfo", data)
 		userDetails, err := getUserDetails(oauth2Token.AccessToken)
@@ -348,7 +349,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
 func postsHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetBool(r.Context(), "authenticated") {
+	if sessionManager.Token(r.Context()) != "" {
 		switch r.Method {
 		case "GET":
 			handleGetPosts(w, r)
@@ -363,7 +364,7 @@ func postsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	if sessionManager.GetBool(r.Context(), "authenticated") {
+	if sessionManager.Token(r.Context()) != "" {
 		id, err := strconv.Atoi(r.URL.Path[len("/posts/"):])
 		if err != nil {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
