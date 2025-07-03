@@ -165,7 +165,7 @@ func main() {
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
-	sessionManager.Clear(r.Context())
+	sessionManager.Destroy(r.Context())
 	http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
 
 }

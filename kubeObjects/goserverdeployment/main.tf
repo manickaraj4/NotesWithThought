@@ -100,7 +100,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
 
           liveness_probe {
             http_get {
-              path = "/posts"
+              path = "/healthcheck"
               port = 8080
             }
 
