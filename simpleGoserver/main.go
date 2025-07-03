@@ -180,7 +180,7 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.Token(r.Context()) != "" {
+	if sessionManager.GetInt(r.Context(), "id") != 0 {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
@@ -205,7 +205,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func fallbackHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.Token(r.Context()) != "" {
+	if sessionManager.GetInt(r.Context(), "id") != 0 {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
 		http.Redirect(w, r, "/auth/login", http.StatusMovedPermanently)
@@ -227,7 +227,7 @@ func fallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.Token(r.Context()) != "" {
+	if sessionManager.GetInt(r.Context(), "id") != 0 {
 		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
 	} else {
 		state := sessionManager.GetString(r.Context(), "state")
@@ -345,7 +345,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
 func postsHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.Token(r.Context()) != "" {
+	if sessionManager.GetInt(r.Context(), "id") != 0 {
 		switch r.Method {
 		case "GET":
 			handleGetPosts(w, r)
@@ -360,7 +360,7 @@ func postsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	if sessionManager.Token(r.Context()) != "" {
+	if sessionManager.GetInt(r.Context(), "id") != 0 {
 		id, err := strconv.Atoi(r.URL.Path[len("/posts/"):])
 		if err != nil {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
