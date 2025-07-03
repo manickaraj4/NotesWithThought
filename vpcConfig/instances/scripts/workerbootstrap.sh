@@ -42,7 +42,26 @@ EOF
 
 sudo systemctl enable --now docker
 
+sudo yum install -y jq
+
+arch=amd64
+lscpu -J | jq '.lscpu[].data' | grep "x86_64"
+if [ $? = 0 ]; then arch=amd64 ; else arch=arm64 ; fi
+
+sudo curl -o /bin/ecr-credential-provider "https://storage.googleapis.com/k8s-staging-provider-aws/releases/v1.29.8-2-ga3014ec/linux/${arch}/ecr-credential-provider-linux-${arch}"
+sudo chmod 755 /bin/ecr-credential-provider
+
+cat <<EOF | sudo tee /etc/kubernetes/kubeletcredentialconfig.yaml
+apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - name: ecr-credential-provider
+    apiVersion: credentialprovider.kubelet.k8s.io/v1
+    matchImages:
+      - "*.dkr.ecr.*.amazonaws.com"
+    defaultCacheDuration: 12h
+EOF
+
 sudo systemctl enable kubelet
 
-sudo yum install -y jq
 sudo `aws ssm get-parameter --name kube_join_command --with-decryption --region ${region} | jq -r ".Parameter.Value"`

@@ -48,6 +48,26 @@ EOF
 
 sudo systemctl enable --now docker
 
+cat <<EOF | sudo tee /etc/kubernetes/kubeletcredentialconfig.yaml
+apiVersion: kubelet.config.k8s.io/v1
+kind: CredentialProviderConfig
+providers:
+  - name: ecr-credential-provider
+    apiVersion: credentialprovider.kubelet.k8s.io/v1
+    matchImages:
+      - "*.dkr.ecr.*.amazonaws.com"
+    defaultCacheDuration: 12h
+EOF
+
+sudo yum install -y jq
+
+arch=amd64
+lscpu -J | jq '.lscpu[].data' | grep "x86_64"
+if [ $? = 0 ]; then arch=amd64 ; else arch=arm64 ; fi
+
+sudo curl -o /bin/ecr-credential-provider "https://storage.googleapis.com/k8s-staging-provider-aws/releases/v1.29.8-2-ga3014ec/linux/${arch}/ecr-credential-provider-linux-${arch}"
+sudo chmod 755 /bin/ecr-credential-provider
+
 cat <<EOF | sudo tee /etc/kubernetes/apiserver-custom.yaml
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
@@ -63,6 +83,18 @@ apiServer:
       mountPath: /etc/kubernetes/static-token
       readOnly: true
       pathType: "File"
+nodeRegistration:
+  kubeletExtraArgs:
+    - name: "image-credential-provider-config"
+      value: "/etc/kubernetes/kubeletcredentialconfig.yaml"
+    - name: "image-credential-provider-bin-dir"
+      value: "/bin"
+joinConfiguration:
+  kubeletExtraArgs:
+    - name: "image-credential-provider-config"
+      value: "/etc/kubernetes/kubeletcredentialconfig.yaml"
+    - name: "image-credential-provider-bin-dir"
+      value: "/bin"
 EOF
 
 sudo systemctl enable kubelet
@@ -80,8 +112,6 @@ sudo cat /etc/kubernetes/admin.conf | grep certificate-authority-data | cut -d "
 sleep 10
 
 aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ${region}
-
-sudo yum install -y jq
 
 aws s3 cp /home/ec2-user/.kube/config s3://${bucket}/KubeConfig/kubeconfig --content-type="text/*"
 aws s3 cp /home/ec2-user/.kube/client-key.pem s3://${bucket}/KubeConfig/client-key.pem --content-type="text/*"

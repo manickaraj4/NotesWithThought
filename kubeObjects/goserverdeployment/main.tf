@@ -1,5 +1,5 @@
-data "aws_ecr_authorization_token" "ecr_token" {
-}
+/* data "aws_ecr_authorization_token" "ecr_token" {
+} */
 
 data "aws_caller_identity" "current" {}
 
@@ -17,7 +17,7 @@ data "aws_ssm_parameter" "github_oauth_secret" {
   with_decryption = true
 }
 
-resource "kubernetes_secret" "docker_token_secret-default" {
+/* resource "kubernetes_secret" "docker_token_secret-default" {
   metadata {
     name      = "docker-cfg-default"
     namespace = "default"
@@ -35,7 +35,7 @@ resource "kubernetes_secret" "docker_token_secret-default" {
       }
     })
   }
-}
+} */
 
 resource "kubernetes_deployment" "go_server_deployment" {
   metadata {
@@ -63,9 +63,9 @@ resource "kubernetes_deployment" "go_server_deployment" {
 
       spec {
 
-        image_pull_secrets {
+/*         image_pull_secrets {
           name = "docker-cfg-default"
-        }
+        } */
 
         container {
           image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/apprepo:latest"

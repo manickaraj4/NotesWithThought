@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -31,9 +32,11 @@ var (
 	clientSecret = os.Getenv("GITHUB_OAUTH2_CLIENT_SECRET")
 	domain       = os.Getenv("DOMAIN")
 	config       oauth2.Config
-	verifier     *oidc.IDTokenVerifier
-	ctx          context.Context
-	provider     *oidc.Provider
+	// verifier     *oidc.IDTokenVerifier
+	ctx            context.Context
+	provider       *oidc.Provider
+	sessionManager *scs.SessionManager
+	mux            *http.ServeMux
 )
 
 func randString(nByte int) (string, error) {
@@ -56,18 +59,28 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 }
 
 func main() {
+
+	sessionManager = scs.New()
+	sessionManager.Lifetime = 24 * time.Hour
+	sessionManager.Cookie.Domain = domain
+	sessionManager.Cookie.HttpOnly = true
+	sessionManager.Cookie.Secure = true
+	sessionManager.Cookie.Persist = true
+
+	mux = http.NewServeMux()
+
 	ctx = context.Background()
-	resp, err := http.Get("https://github.com/login/oauth/.well-known/openid-configuration")
+	/* resp, err := http.Get("https://github.com/login/oauth/.well-known/openid-configuration")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() */
 
 	// Parse config from JSON metadata.
 	providerConfig := &oidc.ProviderConfig{}
-	if err := json.NewDecoder(resp.Body).Decode(providerConfig); err != nil {
+	/* if err := json.NewDecoder(resp.Body).Decode(providerConfig); err != nil {
 		log.Fatal(err)
-	}
+	} */
 
 	providerConfig.UserInfoURL = "https://api.github.com/user"
 	providerConfig.AuthURL = "https://github.com/login/oauth/authorize"
@@ -78,14 +91,14 @@ func main() {
 		log.Fatal(err)
 	} */
 
-	oidcConfig := &oidc.Config{
-		ClientID: clientID,
-	}
+	/* 	oidcConfig := &oidc.Config{
+	   		ClientID: clientID,
+	   	}
 
-	verifier = provider.Verifier(oidcConfig)
+	   	verifier = provider.Verifier(oidcConfig) */
 
 	redirectUrl := fmt.Sprintf("https://posts.%s/auth/github/callback", domain)
-	scopes := []string{oidc.ScopeOpenID}
+	scopes := []string{oidc.ScopeOpenID, "login", "email"}
 
 	config = oauth2.Config{
 		ClientID:     clientID,
@@ -100,30 +113,57 @@ func main() {
 
 	// provider, err := oidc.NewProvider(ctx, "https://accounts.google.com")
 
-	http.HandleFunc("/posts", postsHandler)
-	http.HandleFunc("/posts/", postHandler)
-	http.HandleFunc("/", fallbackHandler)
-	http.HandleFunc("/auth/github/callback", oauthHandler)
+	mux.HandleFunc("/posts", postsHandler)
+	mux.HandleFunc("/posts/", postHandler)
+	mux.HandleFunc("/", fallbackHandler)
+	mux.HandleFunc("/auth/github/callback", oauthHandler)
+	mux.HandleFunc("/auth/login", loginHandler)
+	mux.HandleFunc("/logout", logoutHandler)
 
 	fmt.Println("Server is running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(mux)))
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+
+	sessionManager.Clear(r.Context())
+	sessionManager.Put(r.Context(), "authenticated", false)
+	http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+
+	if sessionManager.GetBool(r.Context(), "authenticated") {
+		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+	} else {
+		state, err := randString(16)
+		if err != nil {
+			http.Error(w, "Internal error", http.StatusInternalServerError)
+			return
+		}
+		nonce, err := randString(16)
+		if err != nil {
+			http.Error(w, "Internal error", http.StatusInternalServerError)
+			return
+		}
+
+		sessionManager.Put(r.Context(), "state", state)
+		sessionManager.Put(r.Context(), "nonce", nonce)
+
+		/* 	setCallbackCookie(w, r, "state", state)
+		setCallbackCookie(w, r, "nonce", nonce) */
+		http.Redirect(w, r, config.AuthCodeURL(state), http.StatusFound)
+	}
 }
 
 func fallbackHandler(w http.ResponseWriter, r *http.Request) {
-	state, err := randString(16)
-	if err != nil {
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-	nonce, err := randString(16)
-	if err != nil {
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
 
-	setCallbackCookie(w, r, "state", state)
-	setCallbackCookie(w, r, "nonce", nonce)
-	http.Redirect(w, r, config.AuthCodeURL(state, oidc.Nonce(nonce)), http.StatusFound)
+	if sessionManager.GetBool(r.Context(), "authenticated") {
+		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+	} else {
+		http.Redirect(w, r, "/auth/login", http.StatusMovedPermanently)
+	}
 
 	/*
 	   	switch r.Method {
@@ -140,121 +180,141 @@ func fallbackHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func oauthHandler(w http.ResponseWriter, r *http.Request) {
-	state, err := r.Cookie("state")
-	if err != nil {
-		http.Error(w, "state not found", http.StatusBadRequest)
-		return
+
+	if sessionManager.GetBool(r.Context(), "authenticated") {
+		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+	} else {
+
+		sessionManager.Put(r.Context(), "authenticated", false)
+		state := sessionManager.GetString(r.Context(), "state")
+
+		if r.URL.Query().Get("state") != state {
+			http.Error(w, "state did not match", http.StatusBadRequest)
+			return
+		}
+
+		oauth2Token, err := config.Exchange(ctx, r.URL.Query().Get("code"))
+
+		if err != nil {
+			http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		log.Println("Reading OauthToken")
+
+		res2B, _ := json.Marshal(oauth2Token)
+		log.Println(string(res2B))
+
+		/*     rawIDToken, ok := oauth2Token.Extra("id_token").(string)
+		if !ok {
+			http.Error(w, "No id_token field in oauth2 token.", http.StatusInternalServerError)
+			return
+		}
+
+		idToken, err := verifier.Verify(ctx, rawIDToken)
+		if err != nil {
+			http.Error(w, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
+			return
+		} */
+
+		// rawAccessToken := oauth2Token.AccessToken
+		/* 	if err != nil {
+			http.Error(w, "No Access oauth2 token.", http.StatusInternalServerError)
+			return
+		} */
+
+		/* 	accessToken, err := verifier.Verify(ctx, rawAccessToken)
+		if err != nil {
+			http.Error(w, "Failed to verify Access Token: "+err.Error(), http.StatusInternalServerError)
+			return
+		} */
+
+		/* 	nonce, err := r.Cookie("nonce")
+		if err != nil {
+			http.Error(w, "nonce not found", http.StatusBadRequest)
+			return
+		}
+		if accessToken.Nonce != nonce.Value {
+			http.Error(w, "nonce did not match", http.StatusBadRequest)
+			return
+		} */
+
+		userInfo, err := provider.UserInfo(ctx, oauth2.StaticTokenSource(oauth2Token))
+		if err != nil {
+			http.Error(w, "Failed to get userinfo: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		resp := struct {
+			OAuth2Token *oauth2.Token
+			UserInfo    *oidc.UserInfo
+		}{oauth2Token, userInfo}
+		data, err := json.MarshalIndent(resp, "", "    ")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		log.Println("Reading UserInfo")
+
+		res2C, _ := json.Marshal(data)
+		log.Println(string(res2C))
+		sessionManager.Put(r.Context(), "authenticated", true)
+		sessionManager.Put(r.Context(), "oauthtoken", oauth2Token.AccessToken)
+		sessionManager.Put(r.Context(), "userinfo", data)
+		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+
+		/*     resp := struct {
+			OAuth2Token   *oauth2.Token
+			AccessTokenClaims *json.RawMessage // ID Token payload is just JSON.
+		}{oauth2Token, new(json.RawMessage)}
+
+		if err := idToken.Claims(&resp.IDTokenClaims); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		data, err := json.MarshalIndent(resp, "", "    ")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} */
 	}
-	if r.URL.Query().Get("state") != state.Value {
-		http.Error(w, "state did not match", http.StatusBadRequest)
-		return
-	}
-
-	oauth2Token, err := config.Exchange(ctx, r.URL.Query().Get("code"))
-
-	if err != nil {
-		http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	log.Println("Reading Body")
-
-	res2B, _ := json.Marshal(oauth2Token)
-	log.Println(string(res2B))
-
-	/*     rawIDToken, ok := oauth2Token.Extra("id_token").(string)
-	       if !ok {
-	           http.Error(w, "No id_token field in oauth2 token.", http.StatusInternalServerError)
-	           return
-	       }
-
-	       idToken, err := verifier.Verify(ctx, rawIDToken)
-	       if err != nil {
-	           http.Error(w, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
-	           return
-	       } */
-
-	// rawAccessToken := oauth2Token.AccessToken
-	/* 	if err != nil {
-		http.Error(w, "No Access oauth2 token.", http.StatusInternalServerError)
-		return
-	} */
-
-	/* 	accessToken, err := verifier.Verify(ctx, rawAccessToken)
-	   	if err != nil {
-	   		http.Error(w, "Failed to verify Access Token: "+err.Error(), http.StatusInternalServerError)
-	   		return
-	   	} */
-
-	/* 	nonce, err := r.Cookie("nonce")
-	   	if err != nil {
-	   		http.Error(w, "nonce not found", http.StatusBadRequest)
-	   		return
-	   	}
-	   	if accessToken.Nonce != nonce.Value {
-	   		http.Error(w, "nonce did not match", http.StatusBadRequest)
-	   		return
-	   	} */
-
-	userInfo, err := provider.UserInfo(ctx, oauth2.StaticTokenSource(oauth2Token))
-	if err != nil {
-		http.Error(w, "Failed to get userinfo: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	resp := struct {
-		OAuth2Token *oauth2.Token
-		UserInfo    *oidc.UserInfo
-	}{oauth2Token, userInfo}
-	data, err := json.MarshalIndent(resp, "", "    ")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(data)
-
-	/*     resp := struct {
-	           OAuth2Token   *oauth2.Token
-	           AccessTokenClaims *json.RawMessage // ID Token payload is just JSON.
-	       }{oauth2Token, new(json.RawMessage)}
-
-	       if err := idToken.Claims(&resp.IDTokenClaims); err != nil {
-	           http.Error(w, err.Error(), http.StatusInternalServerError)
-	           return
-	       }
-	       data, err := json.MarshalIndent(resp, "", "    ")
-	       if err != nil {
-	           http.Error(w, err.Error(), http.StatusInternalServerError)
-	           return
-	       } */
 
 }
 
 func postsHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		handleGetPosts(w, r)
-	case "POST":
-		handlePostPosts(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+	if sessionManager.GetBool(r.Context(), "authenticated") {
+		switch r.Method {
+		case "GET":
+			handleGetPosts(w, r)
+		case "POST":
+			handlePostPosts(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	} else {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 	}
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Path[len("/posts/"):])
-	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
-		return
-	}
-
-	switch r.Method {
-	case "GET":
-		handleGetPost(w, r, id)
-	case "DELETE":
-		handleDeletePost(w, r, id)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	if sessionManager.GetBool(r.Context(), "authenticated") {
+		id, err := strconv.Atoi(r.URL.Path[len("/posts/"):])
+		if err != nil {
+			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			return
+		}
+		switch r.Method {
+		case "GET":
+			handleGetPost(w, r, id)
+		case "DELETE":
+			handleDeletePost(w, r, id)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	} else {
+		http.Error(w, "Method not allowed", http.StatusUnauthorized)
 	}
 }
 
