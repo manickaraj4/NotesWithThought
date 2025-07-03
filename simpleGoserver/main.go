@@ -47,7 +47,7 @@ func randString(nByte int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
+/* func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	c := &http.Cookie{
 		Name:     name,
 		Value:    value,
@@ -56,7 +56,7 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 		HttpOnly: true,
 	}
 	http.SetCookie(w, c)
-}
+} */
 
 func main() {
 
@@ -98,7 +98,7 @@ func main() {
 	   	verifier = provider.Verifier(oidcConfig) */
 
 	redirectUrl := fmt.Sprintf("https://posts.%s/auth/github/callback", domain)
-	scopes := []string{oidc.ScopeOpenID, "login", "email"}
+	scopes := []string{oidc.ScopeOpenID, "read:user", "user:email"}
 
 	config = oauth2.Config{
 		ClientID:     clientID,
