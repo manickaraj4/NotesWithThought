@@ -19,12 +19,15 @@ const fetchUser = async () => {
     return await response.json();
 };
 
+
+
 function App() {
 
   const [userInfo, setUserInfo] = useState({
-    "id" : 0,
-    "login": ""
+    id : 0,
+    login: ""
   });
+  const [refreshPosts,setRefreshPosts] = useState(false);
 
   useEffect(() => {
     
@@ -38,7 +41,12 @@ function App() {
       })
       console.log("After fetchUser")
     }
-  }, []);
+  }, [userInfo]);
+
+  const updateFromChild = () => {
+    setRefreshPosts(true)
+    setRefreshPosts(false)
+  }
 
   return (
     <div className="App">
@@ -57,13 +65,13 @@ function App() {
       </div>
       <Nav>
         <NavItem>
-        <UserInfo props={userInfo}></UserInfo>
+          <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
         </NavItem>
       </Nav>
-      <PostPost>
+      <PostPost updateFromChild={updateFromChild}>
 
       </PostPost>
-      <Posts>
+      <Posts refreshPosts={refreshPosts}>
 
       </Posts>
   

@@ -19,16 +19,33 @@ class Posts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-        posts: []
+        posts: [],
+        refresh: props.refresh
     };
   }
 
   componentDidMount() {
     fetchPosts().then((res)=> {
         this.setState({
-            posts: res
+            posts: res,
+            refresh: false
         })
     });
+  }
+
+  componentDidUpdate() {
+    if(this.state.refresh) {
+        fetchPosts().then((res)=> {
+            this.setState({
+                posts: res,
+                refresh: false
+            })
+    });
+    }
+    this.setState({
+        posts: this.state.posts,
+        refresh: false
+    })
   }
 
   render() {

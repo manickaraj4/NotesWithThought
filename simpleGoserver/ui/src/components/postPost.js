@@ -59,6 +59,7 @@ class PostPost extends React.Component {
                 body: ""
             }
         )
+        this.props.updateFromChild();
     })
   }
 
@@ -67,6 +68,7 @@ class PostPost extends React.Component {
     return (
 
         <Container>
+            <h2>Post a Message</h2>
             <InputGroup>
                 <InputGroup.Text id="postid" >ID of post</InputGroup.Text>
                 <Form.Control value={this.state.id} onChange={this.handleIdChange}/>

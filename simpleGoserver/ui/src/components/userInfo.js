@@ -7,18 +7,23 @@ class UserInfo extends React.Component {
     this.handleLoginClick = this.handleLoginClick.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
     this.state = {
-      userId: 0,
-      userLogin: ""
+      userId: props.id,
+      userLogin: props.login
     };
   }
 
   handleLoginClick() {
     window.location.replace("/auth/login")
+    
   }
 
   handleLogoutClick() {
     this.setState({userId: 0, userLogin: ""});
     window.location.replace("/logout")
+  }
+
+  componentDidMount(){
+    console.log(this.state);
   }
 
   render() {
