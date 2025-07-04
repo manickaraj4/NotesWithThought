@@ -1,8 +1,27 @@
 import logo from './logo.svg';
 import './App.css';
 import UserInfo from './components/userInfo';
+import PostPost from './components/postPost';
+import Posts from './components/posts';
 import { useState, useEffect } from 'react';
-import { Button, Navbar, Nav, NavItem } from 'react-bootstrap';
+import { Nav, NavItem, Navbar } from 'react-bootstrap';
+
+const fetchUser = async () => {
+  try {
+    const response = await fetch('/userinfo'); 
+    console.log("waiting for await")
+    if (!response.ok) {
+      console.log("User is unauthorized Code: ",response.status)
+    }
+    return await response.json();
+  } catch (err) {
+    console.log(err);
+    return {
+      id : 0,
+      login: ""
+    }
+  } 
+};
 
 function App() {
 
@@ -13,34 +32,14 @@ function App() {
 
   useEffect(() => {
     console.log("Inside useEffect")
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/userinfo'); 
-        console.log("waiting for await")
-        if (!response.ok) {
-          console.log("User is unauthorized Code: ",response.status)
-        }
-        const result = await response.json();
-        setUserInfo(result)
-      } catch (err) {
-        console.log(err);
-      } 
-    };
     if (userInfo === 0) {
-      fetchUser();
+      setUserInfo(fetchUser());
     }
   }, []);
 
   return (
     <div className="App">
-      <Nav>
-        <NavItem>
-        <UserInfo props={userInfo}></UserInfo>
-        </NavItem>
-      </Nav>
-    
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+      <div >
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
@@ -52,7 +51,19 @@ function App() {
         >
           Learn React
         </a>
-      </header>
+      </div>
+      <Nav>
+        <NavItem>
+        <UserInfo props={userInfo}></UserInfo>
+        </NavItem>
+      </Nav>
+      <PostPost>
+
+      </PostPost>
+      <Posts>
+
+      </Posts>
+  
     </div>
   );
 }
