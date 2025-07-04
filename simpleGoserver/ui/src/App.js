@@ -7,20 +7,16 @@ import { useState, useEffect } from 'react';
 import { Nav, NavItem, Navbar } from 'react-bootstrap';
 
 const fetchUser = async () => {
-  try {
     const response = await fetch('/userinfo'); 
     console.log("waiting for await")
     if (!response.ok) {
       console.log("User is unauthorized Code: ",response.status)
+      return {
+        id : 0,
+        login: ""
+      }
     }
     return await response.json();
-  } catch (err) {
-    console.log(err);
-    return {
-      id : 0,
-      login: ""
-    }
-  } 
 };
 
 function App() {
@@ -31,9 +27,16 @@ function App() {
   });
 
   useEffect(() => {
-    console.log("Inside useEffect")
-    if (userInfo === 0) {
-      setUserInfo(fetchUser());
+    
+    if (userInfo.id === 0) {
+      console.log("Inside useEffect")
+      fetchUser().then((res)=> {
+        console.log("Inside then")
+        setUserInfo(res);
+      }).catch((err)=> {
+        console.log(err)
+      })
+      console.log("After fetchUser")
     }
   }, []);
 

@@ -35,7 +35,7 @@ class PostPost extends React.Component {
   handleIdChange(e) {
     this.setState(
         {
-            id: e.target.value,
+            id: parseInt(e.target.value,10),
             body: this.state.body
         }
     )
