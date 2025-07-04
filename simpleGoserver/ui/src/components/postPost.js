@@ -1,5 +1,5 @@
 import React from "react";
-import {Button,Container,InputGroup} from 'react-bootstrap';
+import {Button,Container,InputGroup, Form} from 'react-bootstrap';
 
 
 const postPost = async (post) => {
@@ -68,10 +68,14 @@ class PostPost extends React.Component {
 
         <Container>
             <InputGroup>
-                <InputGroup.Text id="postid" value={this.state.id} onChange={this.handleIdChange} >ID of post</InputGroup.Text>
-                <InputGroup.Text id="postbody" value={this.state.body} onChange={this.handleBodyChange} >Body of post</InputGroup.Text>
-                <Button onClick={this.handleSubmitClick}>Submit Post</Button>
+                <InputGroup.Text id="postid" >ID of post</InputGroup.Text>
+                <Form.Control value={this.state.id} onChange={this.handleIdChange}/>
             </InputGroup>
+            <InputGroup>
+                <InputGroup.Text id="postbody" >Body of post</InputGroup.Text>
+                <Form.Control value={this.state.body} onChange={this.handleBodyChange} />
+            </InputGroup>
+            <Button onClick={this.handleSubmitClick}>Submit Post</Button>
         </Container>
 
     );
