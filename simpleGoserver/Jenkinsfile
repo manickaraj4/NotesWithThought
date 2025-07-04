@@ -26,16 +26,23 @@ pipeline {
 
         stage('RestartDeployment') {
             steps {
-                //def now = new Date()
-                //def nowiso = now.format("+%Y-%m-%dT%H:%M:%SZ", TimeZone.getTimeZone('UTC'))
-                final String currentTime = sh(returnStdout: true, script: 'date +%Y-%m-%dT%H:%M:%SZ').trim()
-                final String kubeToken = sh(returnStdout: true, script: "aws ssm get-parameter --name kube_static_token --with-decryption --region ${params.AwsRegion} | jq -r '.Parameter.Value'").trim()
-                def patch = """
-                    {"spec": {"template": {"metadata": {"annotations": {"kubectl.kubernetes.io/restartedAt":"${currentTime}"} }}}}
-                """
-                def response = httpRequest acceptType: 'APPLICATION_JSON', httpMode: 'PATCH', requestBody: patch,
-                        customHeaders: [[name: 'Content-Type', value: 'application/strategic-merge-patch+json'], [name: 'Authorization', value: "Bearer ${kubeToken}"]],
-                        url: "https://kubeadmin.${params.Domain}/apis/apps/v1/namespaces/default/deployments/posts-app?fieldManager=kubectl-rollout"
+                script {
+                    //def now = new Date()
+                    //def nowiso = now.format("+%Y-%m-%dT%H:%M:%SZ", TimeZone.getTimeZone('UTC'))
+                    final String currentTime = sh(returnStdout: true, script: 'date +%Y-%m-%dT%H:%M:%SZ').trim()
+                    final String kubeToken = sh(returnStdout: true, script: "aws ssm get-parameter --name kube_static_token --with-decryption --region ${params.AwsRegion} | jq -r '.Parameter.Value'").trim()
+
+                    def patch = """
+                        {"spec": {"template": {"metadata": {"annotations": {"kubectl.kubernetes.io/restartedAt":"${currentTime}"} }}}}
+                    """
+                    def response = httpRequest acceptType: 'APPLICATION_JSON', httpMode: 'PATCH', requestBody: patch,
+                            customHeaders: [[name: 'Content-Type', value: 'application/strategic-merge-patch+json'], [name: 'Authorization', value: "Bearer ${kubeToken}"]],
+                            url: "https://kubeadmin.${params.Domain}/apis/apps/v1/namespaces/default/deployments/posts-app?fieldManager=kubectl-rollout"
+                            
+                    println("Status: ${response.status}")
+                    println("Response: ${response.content}")
+                    println("Headers: ${response.headers}")
+                }
             }
         }
 
