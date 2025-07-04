@@ -167,6 +167,13 @@ resource "aws_iam_role_policy_attachment" "ECRFullAccess_policy_attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
 }
 
+resource "aws_iam_role_policy" "ssm_slave_policy" {
+  name = "ssm_slave_policy"
+  role = aws_iam_role.jenkins_ec2_instance_role.id
+
+  policy = templatefile("${path.module}/scripts/ssmec2policy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}", bucket = "${var.config_s3_bucket}" })
+}
+
 resource "aws_instance" "jenkins_slave_node" {
   ami                    = var.x86_ami
   instance_type          = var.worker_instance_type

@@ -65,7 +65,7 @@ arch=amd64
 lscpu -J | jq '.lscpu[].data' | grep "x86_64"
 if [ $? = 0 ]; then arch=amd64 ; else arch=arm64 ; fi
 
-sudo curl -o /bin/ecr-credential-provider "https://storage.googleapis.com/k8s-staging-provider-aws/releases/v1.29.8-2-ga3014ec/linux/${arch}/ecr-credential-provider-linux-${arch}"
+sudo curl -o /bin/ecr-credential-provider "https://storage.googleapis.com/k8s-staging-provider-aws/releases/v1.29.8-2-ga3014ec/linux/$arch/ecr-credential-provider-linux-$arch"
 sudo chmod 755 /bin/ecr-credential-provider
 
 cat <<EOF | sudo tee /etc/kubernetes/apiserver-custom.yaml
