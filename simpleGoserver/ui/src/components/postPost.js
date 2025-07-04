@@ -59,7 +59,7 @@ class PostPost extends React.Component {
                 body: ""
             }
         )
-        this.props.updateFromChild();
+        //this.props.updateFromChild();
     })
   }
 

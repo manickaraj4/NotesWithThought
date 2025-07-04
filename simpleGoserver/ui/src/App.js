@@ -27,7 +27,7 @@ function App() {
     id : 0,
     login: ""
   });
-  const [refreshPosts,setRefreshPosts] = useState(false);
+  //const [refreshPosts,setRefreshPosts] = useState(false);
 
   useEffect(() => {
     
@@ -43,10 +43,10 @@ function App() {
     }
   }, [userInfo]);
 
-  const updateFromChild = () => {
+/*   const updateFromChild = () => {
     setRefreshPosts(true)
     setRefreshPosts(false)
-  }
+  } */
 
   return (
     <div className="App">
@@ -68,10 +68,10 @@ function App() {
           <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
         </NavItem>
       </Nav>
-      <PostPost updateFromChild={updateFromChild}>
+      <PostPost >
 
       </PostPost>
-      <Posts refreshPosts={refreshPosts}>
+      <Posts>
 
       </Posts>
   
