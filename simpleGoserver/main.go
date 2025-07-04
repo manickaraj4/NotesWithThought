@@ -217,6 +217,7 @@ func main() {
 	mux.HandleFunc("/posts", postsHandler)
 	mux.HandleFunc("/posts/", postHandler)
 	//mux.HandleFunc("/", fallbackHandler)
+	mux.HandleFunc("/userinfo", userInfoHandler)
 	mux.HandleFunc("/auth/github/callback", oauthHandler)
 	mux.HandleFunc("/auth/login", loginHandler)
 	mux.HandleFunc("/logout", logoutHandler)
@@ -234,7 +235,7 @@ func main() {
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionManager.Destroy(r.Context())
-	http.Redirect(w, r, "/auth/login", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 
 }
 
@@ -249,7 +250,7 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if sessionManager.GetInt(r.Context(), "id") != 0 {
-		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
 		if err != nil {
@@ -271,32 +272,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func fallbackHandler(w http.ResponseWriter, r *http.Request) {
-
-	if sessionManager.GetInt(r.Context(), "id") != 0 {
-		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
-	} else {
-		http.Redirect(w, r, "/auth/login", http.StatusMovedPermanently)
-	}
-
-	/*
-	   	switch r.Method {
-
-	   case "GET":
-
-	   	http.Redirect(w, r, "/posts", http.StatusMovedPermanently)
-
-	   default:
-
-	   	    http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	   	}
-	*/
-}
-
 func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
 	if sessionManager.GetInt(r.Context(), "id") != 0 {
-		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	} else {
 		state := sessionManager.GetString(r.Context(), "state")
 
@@ -394,7 +373,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 
 		sessionManager.WriteSessionCookie(r.Context(), w, token, expiry)
 
-		http.Redirect(w, r, "/posts", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 
 		/*     resp := struct {
 			OAuth2Token   *oauth2.Token
@@ -412,6 +391,31 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		} */
 	}
 
+}
+
+func userInfoHandler(w http.ResponseWriter, r *http.Request) {
+
+	if sessionManager.GetInt(r.Context(), "id") != 0 {
+
+		switch r.Method {
+		case "GET":
+			var user User
+			user.Login = sessionManager.GetString(r.Context(), "login")
+			user.Id = sessionManager.GetInt(r.Context(), "id")
+
+			jsonres, err := json.Marshal(user)
+			if err != nil {
+				log.Fatal("Failed to retrieve user", err)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(jsonres)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+
+	} else {
+		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
+	}
 }
 
 func postsHandler(w http.ResponseWriter, r *http.Request) {
