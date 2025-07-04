@@ -1,4 +1,5 @@
 import React from "react";
+import {Button,Container} from 'react-bootstrap';
 
 class UserInfo extends React.Component {
   constructor(props) {
@@ -23,16 +24,16 @@ class UserInfo extends React.Component {
   render() {
     let button;
     if (this.state.userId === 0) {
-      button = <button onClick={this.handleLoginClick}> Login with Github</button>;
+      button = <Button onClick={this.handleLoginClick}> Login with Github</Button>;
     } else {
-      button = <button onClick={this.handleLogoutClick}> Log Out </button>;
+      button = <Button onClick={this.handleLogoutClick}> Log Out </Button>;
     }
 
     return (
-      <div>
+       <Container>
         <h4>Welcome {this.state.userLogin}</h4>
         {button}
-      </div>
+      </Container>
     );
   }
 }
