@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build
 
 WORKDIR /usr/src/app/ui
 
@@ -12,6 +12,7 @@ FROM golang:1.24
 WORKDIR /usr/src/app
 
 COPY go.mod main.go /usr/src/app/
+COPY --from=build /usr/src/app/ui/ /usr/src/app/ui/
 
 RUN go get github.com/coreos/go-oidc/v3/oidc
 RUN go get golang.org/x/net/context

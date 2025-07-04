@@ -67,7 +67,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
           name = "docker-cfg-default"
         } */
 
-        node_selector {
+        node_selector = {
           "kubernetes.io/arch" = "amd64"
         }
 
