@@ -1,5 +1,5 @@
 import React from "react";
-import {Container,Table} from 'react-bootstrap';
+import {Button,Container,Table} from 'react-bootstrap';
 
 const fetchPosts = async () => {
     try {
@@ -15,20 +15,65 @@ const fetchPosts = async () => {
     } 
 };
 
+const deletePost = async(id) => {
+    try {
+        const request = new Request(`/posts/${id}`, {
+            method: "DELETE"
+            });
+        const response = await fetch(request); 
+        console.log("waiting for await")
+        if (!response.ok) {
+        console.log("User is unauthorized Code: ",response.status)
+        }
+        return 
+    } catch (err) {
+        console.log(err);
+        return 
+    } 
+}
+
 class Posts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-        posts: []
+       posts: []
+       /* posts: [
+        {
+            id: 1,
+            body: "hello"
+        }
+       ] */
     };
   }
 
+  handleDeletePost(id) {
+    deletePost(id).then((res)=>{
+        console.log(res);
+        this.setState([]);
+
+        this.props.updateFromChild();
+    })
+  }
+
   componentDidMount() {
-    fetchPosts().then((res)=> {
-        this.setState({
-            posts: res
-        })
-    });
+    if(this.props.reload) {
+        fetchPosts().then((res)=> {
+            this.setState({
+                posts: res
+            })
+        });
+    }
+  }
+
+  componentDidUpdate() {
+    if(this.props.reload) {
+        fetchPosts().then((res)=> {
+            this.setState({
+                posts: res
+            })
+        });
+    }
+
   }
 
 /*   componentDidUpdate() {
@@ -51,7 +96,7 @@ class Posts extends React.Component {
     return (
 
         <Container>
-            <h2>Posts</h2>
+            <h2>Your Notes</h2>
             <Table>
                 <thead>
                     <tr>
@@ -64,6 +109,7 @@ class Posts extends React.Component {
                         <tr key={item.id}>
                             <td>{item.id}</td>
                             <td>{item.body}</td>
+                            <td><Button variant="outline-danger" onClick={()=>{this.handleDeletePost(item.id)}}>Delete</Button></td>
                         </tr>
                     ))}
                 </tbody>

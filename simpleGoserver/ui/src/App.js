@@ -27,6 +27,12 @@ function App() {
     id : 0,
     login: ""
   });
+  const [loadPosts, setLoadPosts] = useState(false)
+
+  const reloadPosts = () => {
+    setLoadPosts(true)
+    setLoadPosts(false)
+  }
 
   useEffect(() => {
     
@@ -35,6 +41,7 @@ function App() {
       fetchUser().then((res)=> {
         console.log("Inside then")
         setUserInfo(res);
+        setLoadPosts(true)
       }).catch((err)=> {
         console.log(err)
       })
@@ -62,10 +69,10 @@ function App() {
           <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
         </NavItem>
       </Nav>
-      <PostPost >
+      <PostPost updateFromChild={reloadPosts} >
 
       </PostPost>
-      <Posts>
+      <Posts reload={loadPosts} updateFromChild={reloadPosts}>
 
       </Posts>
   

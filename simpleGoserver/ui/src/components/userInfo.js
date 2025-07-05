@@ -27,9 +27,9 @@ class UserInfo extends React.Component {
   render() {
     let button;
     if (this.props.id === 0) {
-      button = <Button onClick={this.handleLoginClick}> Login with Github</Button>;
+      button = <Button variant="success" onClick={this.handleLoginClick}> Login with Github</Button>;
     } else {
-      button = <Button onClick={this.handleLogoutClick}> Log Out </Button>;
+      button = <Button variant="dark" onClick={this.handleLogoutClick}> Log Out </Button>;
     }
 
     return (
