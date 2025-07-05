@@ -1,7 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
 import UserInfo from './components/userInfo';
-import PostPost from './components/postPost';
 import Posts from './components/posts';
 import { useState, useEffect } from 'react';
 import { Nav, NavItem, Navbar } from 'react-bootstrap';
@@ -27,12 +26,7 @@ function App() {
     id : 0,
     login: ""
   });
-  const [loadPosts, setLoadPosts] = useState(true)
 
-  const reloadPosts = () => {
-    setLoadPosts(true)
-    setLoadPosts(false)
-  }
 
   useEffect(() => {
     
@@ -41,7 +35,6 @@ function App() {
       fetchUser().then((res)=> {
         console.log("Inside then")
         setUserInfo(res);
-        setLoadPosts(true)
       }).catch((err)=> {
         console.log(err)
       })
@@ -50,7 +43,12 @@ function App() {
   }, []); 
 
   return (
-    <div className="App">
+    <div>
+      <Nav>
+        <NavItem>
+          <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
+        </NavItem>
+    <NavItem>
       <div >
         <p>
           Edit <code>src/App.js</code> and save to reload.
@@ -64,15 +62,9 @@ function App() {
           Learn React
         </a>
       </div>
-      <Nav>
-        <NavItem>
-          <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
-        </NavItem>
+    </NavItem>
       </Nav>
-      <PostPost updateFromChild={reloadPosts} >
-
-      </PostPost>
-      <Posts reload={loadPosts}>
+      <Posts>
 
       </Posts>
   
