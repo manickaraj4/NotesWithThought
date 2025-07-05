@@ -12,7 +12,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -32,13 +31,10 @@ type User struct {
 }
 
 var (
-	posts        = make(map[int]Post)
-	nextID       = 1
-	postsMu      sync.Mutex
 	clientID     = os.Getenv("GITHUB_OAUTH2_CLIENT_ID")
 	clientSecret = os.Getenv("GITHUB_OAUTH2_CLIENT_SECRET")
 	domain       = os.Getenv("DOMAIN")
-	config       oauth2.Config
+	authconfig   oauth2.Config
 	// verifier     *oidc.IDTokenVerifier
 	ctx            context.Context
 	provider       *oidc.Provider
@@ -159,6 +155,8 @@ func getUserDetails(token string) (User, error) {
 
 func main() {
 
+	dbconnect()
+
 	fsys := dotFileHidingFileSystem{http.Dir("ui/build")}
 
 	sessionManager = scs.New()
@@ -201,7 +199,7 @@ func main() {
 	redirectUrl := fmt.Sprintf("https://posts.%s/auth/github/callback", domain)
 	scopes := []string{oidc.ScopeOpenID, "read:user", "user:email"}
 
-	config = oauth2.Config{
+	authconfig = oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Endpoint: oauth2.Endpoint{
@@ -268,7 +266,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		/* 	setCallbackCookie(w, r, "state", state)
 		setCallbackCookie(w, r, "nonce", nonce) */
-		http.Redirect(w, r, config.AuthCodeURL(state), http.StatusFound)
+		http.Redirect(w, r, authconfig.AuthCodeURL(state), http.StatusFound)
 	}
 }
 
@@ -284,7 +282,7 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		oauth2Token, err := config.Exchange(ctx, r.URL.Query().Get("code"))
+		oauth2Token, err := authconfig.Exchange(ctx, r.URL.Query().Get("code"))
 
 		if err != nil {
 			http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
@@ -455,24 +453,16 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetPosts(w http.ResponseWriter, r *http.Request) {
-	// This is the first time we're using the mutex.
-	// It essentially locks the server so that we can
-	// manipulate the posts map without worrying about
-	// another request trying to do the same thing at
-	// the same time.
-	postsMu.Lock()
-
-	// I love this feature of go - we can defer the
-	// unlocking until the function has finished executing,
-	// but define it up the top with our lock. Nice and neat.
-	// Caution: deferred statements are first-in-last-out,
-	// which is not all that intuitive to begin with.
-	defer postsMu.Unlock()
-
-	// Copying the posts to a new slice of type []Post
-	ps := make([]Post, 0, len(posts))
-	for _, p := range posts {
-		ps = append(ps, p)
+	userId := "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
+	dbposts, err := getdbPostsByUserId(userId)
+	if err != nil {
+		log.Fatalf("Not able to get posts from db", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	ps := make([]Post, 0, len(dbposts))
+	for i := 0; i < len(dbposts); i++ {
+		ps[i].ID = int(dbposts[i].ID)
+		ps[i].Body = dbposts[i].Body
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -481,30 +471,27 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request) {
 
 func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 	var p Post
+	var dbp DbPost
 
-	// This will read the entire body into a byte slice
-	// i.e. ([]byte)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
 
-	// Now we'll try to parse the body. This is similar
-	// to JSON.parse in JavaScript.
 	if err := json.Unmarshal(body, &p); err != nil {
 		http.Error(w, "Error parsing request body", http.StatusBadRequest)
 		return
 	}
 
-	// As we're going to mutate the posts map, we need to
-	// lock the server again
-	postsMu.Lock()
-	defer postsMu.Unlock()
+	dbp.Body = p.Body
+	dbp.Userid = "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
+	_, dberr := adddbPost(dbp)
 
-	p.ID = nextID
-	nextID++
-	posts[p.ID] = p
+	if dberr != nil {
+		log.Fatalf("Not able to insert posts to db", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -512,32 +499,44 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
-	postsMu.Lock()
-	defer postsMu.Unlock()
-
-	p, ok := posts[id]
-	if !ok {
-		http.Error(w, "Post not found", http.StatusNotFound)
-		return
+	var p Post
+	userId := "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
+	dbpost, err := getdbPostsBypostId(id)
+	if err != nil {
+		log.Fatalf("Not able to get post from db", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	if userId != dbpost.Userid {
+		http.Error(w, "You dont have access to this Post", http.StatusForbidden)
+	}
+	p.ID = int(dbpost.ID)
+	p.Body = dbpost.Body
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(p)
 }
 
 func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
-	postsMu.Lock()
-	defer postsMu.Unlock()
 
-	// If you use a two-value assignment for accessing a
-	// value on a map, you get the value first then an
-	// "exists" variable.
-	_, ok := posts[id]
-	if !ok {
-		http.Error(w, "Post not found", http.StatusNotFound)
-		return
+	userId := "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
+	dbpost, err := getdbPostsBypostId(id)
+	if err != nil {
+		log.Fatalf("Not able to get post from db", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	if userId != dbpost.Userid {
+		http.Error(w, "You dont have access to this Post", http.StatusForbidden)
+	}
+	res, err := deldbPost(id)
+	if err != nil {
+		log.Fatalf("Not able to delete post from db", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	if !res {
+		log.Fatalf("Not able to delete post from db", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	delete(posts, id)
 	w.WriteHeader(http.StatusOK)
 }

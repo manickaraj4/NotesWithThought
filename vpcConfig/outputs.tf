@@ -30,6 +30,10 @@ output "ecrapi_endpoint" {
   value = var.deploy_interface_endpoints ? module.vpce_endpoints.vpce_ecr_api_dns : null
 }
 
+output "db_instance_endpoint" {
+  value = module.database.db_endpoint
+}
+
 /* output "s3_endpoint" {
   value = module.vpce_endpoints.vpce_s3_prefix
 }

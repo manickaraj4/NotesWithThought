@@ -18,3 +18,7 @@ output "master_node_id" {
 output "worker_node_id" {
   value = aws_instance.worker_node.id
 }
+
+output "ec2_common_sg" {
+  value = aws_security_group.allow_all_tcp_between_nodes.id
+}

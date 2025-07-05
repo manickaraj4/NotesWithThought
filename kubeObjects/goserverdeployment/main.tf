@@ -90,6 +90,10 @@ resource "kubernetes_deployment" "go_server_deployment" {
             name = "DOMAIN" 
             value = "${var.domain}"
           }
+          env {
+            name = "AWS_REGION" 
+            value = "${var.aws_region}"
+          }
 
           resources {
             limits = {

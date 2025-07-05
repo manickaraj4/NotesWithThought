@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/http"
       version = "3.5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.7.2"
+    }
   }
 
   required_version = ">= 1.2.0"
@@ -25,6 +29,9 @@ provider "aws" {
 }
 
 provider "time" {
+}
+
+provider "random" {
 }
 
 module "vpc" {
@@ -43,6 +50,16 @@ module "vpce_endpoints" {
   public_subnet_1a       = module.vpc.public_subnet_1a
   public_subnet_1b       = module.vpc.public_subnet_1b
   public_subnet_1c       = module.vpc.public_subnet_1c
+}
+
+module "database" {
+  source = "./database"
+
+  aws_region       = var.aws_region
+  allow_ec2_sg     = module.servers.ec2_common_sg
+  private_subnet_a = module.vpc.private_subnet_1a
+  private_subnet_b = module.vpc.private_subnet_1b
+  private_subnet_c = module.vpc.private_subnet_1c
 }
 
 module "servers" {
