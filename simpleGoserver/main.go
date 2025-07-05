@@ -464,10 +464,12 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request) {
 		//log.Fatalf("Not able to get posts from db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	var tempPost Post
 	ps := make([]Post, 0, len(dbposts))
 	for i := 0; i < len(dbposts); i++ {
-		ps[i].ID = int(dbposts[i].ID)
-		ps[i].Body = dbposts[i].Body
+		tempPost.ID = int(dbposts[i].ID)
+		tempPost.Body = dbposts[i].Body
+		ps = append(ps, tempPost)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
