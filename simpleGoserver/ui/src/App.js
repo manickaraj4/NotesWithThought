@@ -27,7 +27,6 @@ function App() {
     id : 0,
     login: ""
   });
-  //const [refreshPosts,setRefreshPosts] = useState(false);
 
   useEffect(() => {
     
@@ -40,13 +39,8 @@ function App() {
         console.log(err)
       })
       console.log("After fetchUser")
-    }
-  }, []);
-
-/*   const updateFromChild = () => {
-    setRefreshPosts(true)
-    setRefreshPosts(false)
-  } */
+    } 
+  }, []); 
 
   return (
     <div className="App">

@@ -6,10 +6,6 @@ class UserInfo extends React.Component {
     super(props);
     this.handleLoginClick = this.handleLoginClick.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
-    this.state = {
-      userId: props.id,
-      userLogin: props.login
-    };
   }
 
   handleLoginClick() {
@@ -23,18 +19,14 @@ class UserInfo extends React.Component {
   }
 
   componentDidMount(){
-    console.log("Initial moun of the user info component")
-    console.log(this.state);
   }
 
   componentDidUpdate(){
-    console.log("Updated the user info component")
-    console.log(this.state);
   }
 
   render() {
     let button;
-    if (this.state.userId === 0) {
+    if (this.props.id === 0) {
       button = <Button onClick={this.handleLoginClick}> Login with Github</Button>;
     } else {
       button = <Button onClick={this.handleLogoutClick}> Log Out </Button>;
@@ -42,7 +34,7 @@ class UserInfo extends React.Component {
 
     return (
        <Container>
-        <h4>Welcome {this.state.userLogin}</h4>
+        <h4>Welcome {this.props.login}</h4>
         {button}
       </Container>
     );
