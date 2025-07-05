@@ -59,13 +59,11 @@ class Posts extends React.Component {
   }
 
   componentDidMount() {
-    if(this.props.reload){
         fetchPosts().then((res)=> {
             this.setState({
                 posts: res
             })
         });
-     }
   }
 
   componentDidUpdate() {
@@ -99,6 +97,7 @@ class Posts extends React.Component {
     return (
 
         <Container>
+            <h4>Reload: {this.props.reload}</h4>
             <h2>Your Notes</h2>
             <Table>
                 <thead>

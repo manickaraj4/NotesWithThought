@@ -27,7 +27,7 @@ function App() {
     id : 0,
     login: ""
   });
-  const [loadPosts, setLoadPosts] = useState(false)
+  const [loadPosts, setLoadPosts] = useState(true)
 
   const reloadPosts = () => {
     setLoadPosts(true)
