@@ -36,29 +36,33 @@ class Posts extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-       posts: []
-       /* posts: [
+       loaded: this.props.reload,
+       //posts: []
+       posts: [
         {
             id: 1,
             body: "hello"
         }
-       ] */
+       ]
     };
   }
 
   handleDeletePost(id) {
     deletePost(id).then((res)=>{
         console.log(res);
-        this.setState([]);
-
+        this.setState({
+            loaded: false,
+            posts: []
+        });
         this.props.updateFromChild();
     })
   }
 
   componentDidMount() {
-    if(this.props.reload) {
+    if(!this.state.loaded) {
         fetchPosts().then((res)=> {
             this.setState({
+                loaded: true,
                 posts: res
             })
         });
@@ -69,6 +73,7 @@ class Posts extends React.Component {
     if(this.props.reload) {
         fetchPosts().then((res)=> {
             this.setState({
+                loaded: true,
                 posts: res
             })
         });
