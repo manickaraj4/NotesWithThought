@@ -72,7 +72,7 @@ function App() {
       <PostPost updateFromChild={reloadPosts} >
 
       </PostPost>
-      <Posts reload={loadPosts} updateFromChild={reloadPosts}>
+      <Posts reload={loadPosts}>
 
       </Posts>
   
