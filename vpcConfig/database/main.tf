@@ -41,4 +41,8 @@ resource "aws_db_instance" "master_db" {
   skip_final_snapshot    = true
   publicly_accessible    = false
   vpc_security_group_ids = [var.allow_ec2_sg]
+
+  provisioner "local-exec" {
+    command = "aws ssm put-parameter --name kube_db_host --type String --value ${aws_lb.master_db.address} --overwrite --region ${var.aws_region}"
+  }
 }

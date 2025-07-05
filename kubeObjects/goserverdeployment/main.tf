@@ -7,6 +7,11 @@ data "aws_ssm_parameter" "lb_cert_id" {
   name = "DomainCertId"
 }
 
+data "aws_ssm_parameter" "db_host" {
+  name = "kube_db_host"
+}
+
+
 data "aws_ssm_parameter" "github_oauth_id" {
   name = "GithubOAuthID"
   with_decryption = true
@@ -93,6 +98,11 @@ resource "kubernetes_deployment" "go_server_deployment" {
           env {
             name = "AWS_REGION" 
             value = "${var.aws_region}"
+          }
+
+          env {
+            name = "DB_HOST" 
+            value = "${data.aws_ssm_parameter.db_host.value}"
           }
 
           resources {
