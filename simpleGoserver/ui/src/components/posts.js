@@ -70,13 +70,13 @@ class Posts extends React.Component {
 
   componentDidUpdate() {
 
-    if(this.props.reload){
+/*     if(this.props.reload){
         fetchPosts().then((res)=> {
             this.setState({
                 posts: res
             })
         });
-     }
+     } */
   }
 
 /*   componentDidUpdate() {
