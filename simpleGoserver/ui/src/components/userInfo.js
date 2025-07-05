@@ -23,6 +23,12 @@ class UserInfo extends React.Component {
   }
 
   componentDidMount(){
+    console.log("Initial moun of the user info component")
+    console.log(this.state);
+  }
+
+  componentDidUpdate(){
+    console.log("Updated the user info component")
     console.log(this.state);
   }
 
