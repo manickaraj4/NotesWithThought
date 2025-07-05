@@ -42,13 +42,42 @@ function App() {
     } 
   }, []); 
 
+  if(userInfo.id == 0) {
+    return (
+      <div>
+        <Nav>
+          <NavItem>
+            <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
+          </NavItem>
+          <NavItem>
+          <div >
+            <p>
+              Edit <code>src/App.js</code> and save to reload.
+            </p>
+            <a
+              className="App-link"
+              href="https://reactjs.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learn React
+            </a>
+          </div>
+    </NavItem>
+      </Nav>
+      
+      </div>
+    )
+  }
+
   return (
+    
     <div>
       <Nav>
         <NavItem>
           <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
         </NavItem>
-    <NavItem>
+      <NavItem>
       <div >
         <p>
           Edit <code>src/App.js</code> and save to reload.
