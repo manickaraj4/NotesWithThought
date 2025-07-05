@@ -47,7 +47,7 @@ func dbconnect() {
 	}
 
 	if result.Parameter != nil {
-		fmt.Println("Parameter Value:", *result.Parameter.Value)
+		//fmt.Println("Parameter Value:", *result.Parameter.Value)
 		db_pass = *result.Parameter.Value
 	} else {
 		fmt.Println("Parameter not found.")
@@ -79,7 +79,7 @@ func getdbPostsByUserId(userId string) ([]DbPost, error) {
 
 	var dbposts []DbPost
 
-	rows, err := db.Query("SELECT * FROM postdata WHERE userid = ?", userId)
+	rows, err := db.Query("SELECT id, body, userid FROM postdata WHERE userid = ?", userId)
 	if err != nil {
 		return nil, fmt.Errorf("postsByUser %q: %v", userId, err)
 	}
@@ -102,14 +102,14 @@ func getdbPostsBypostId(id int) (DbPost, error) {
 
 	var dbpost DbPost
 
-	rows, err := db.Query("SELECT * FROM postdata WHERE id = ?", id)
+	rows, err := db.Query("SELECT id, userid, body FROM postdata WHERE id = ?", id)
 	if err != nil {
 		return dbpost, fmt.Errorf("postsByID %q: %v", id, err)
 	}
 	defer rows.Close()
 
 	if rows.Next() {
-		if err := rows.Scan(&dbpost.ID, &dbpost.Body, &dbpost.Userid); err != nil {
+		if err := rows.Scan(&dbpost.ID, &dbpost.Userid, &dbpost.Body); err != nil {
 			return dbpost, fmt.Errorf("postsByID %q: %v", id, err)
 		}
 	} else {

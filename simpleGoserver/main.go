@@ -113,7 +113,8 @@ func getUserDetails(token string) (User, error) {
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 
 	if err != nil {
-		log.Fatalf("Error creating request: %v", err)
+		//log.Fatalf("Error creating request: %v", err)
+		return user, err
 	}
 
 	req.Header.Add("Authorization", "Bearer "+token)
@@ -123,7 +124,8 @@ func getUserDetails(token string) (User, error) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Fatalf("Error performing request: %v", err)
+		return user, err
+		//log.Fatalf("Error performing request: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -352,7 +354,8 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		//sessionManager.Put(r.Context(), "userinfo", data)
 		userDetails, err := getUserDetails(oauth2Token.AccessToken)
 		if err != nil {
-			log.Fatal("Failed to fetch user details", err)
+			//log.Fatal("Failed to fetch user details", err)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 		}
 
 		res2C, _ := json.Marshal(userDetails)
@@ -366,7 +369,8 @@ func oauthHandler(w http.ResponseWriter, r *http.Request) {
 		token, expiry, err := sessionManager.Commit(r.Context())
 
 		if err != nil {
-			log.Fatal("Failed to store session", err)
+			//log.Fatal("Failed to store session", err)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 		}
 
 		sessionManager.WriteSessionCookie(r.Context(), w, token, expiry)
@@ -403,7 +407,8 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 			jsonres, err := json.Marshal(user)
 			if err != nil {
-				log.Fatal("Failed to retrieve user", err)
+				//log.Fatal("Failed to retrieve user", err)
+				http.Error(w, err.Error(), http.StatusUnauthorized)
 			}
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonres)
@@ -456,7 +461,7 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request) {
 	userId := "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
 	dbposts, err := getdbPostsByUserId(userId)
 	if err != nil {
-		log.Fatalf("Not able to get posts from db", err)
+		//log.Fatalf("Not able to get posts from db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	ps := make([]Post, 0, len(dbposts))
@@ -489,7 +494,7 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 	_, dberr := adddbPost(dbp)
 
 	if dberr != nil {
-		log.Fatalf("Not able to insert posts to db", err)
+		//log.Fatalf("Not able to insert posts to db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -503,7 +508,7 @@ func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 	userId := "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
-		log.Fatalf("Not able to get post from db", err)
+		//log.Fatalf("Not able to get post from db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -522,7 +527,7 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 	userId := "github:" + strconv.Itoa(sessionManager.GetInt(r.Context(), "id")) + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
-		log.Fatalf("Not able to get post from db", err)
+		//log.Fatalf("Not able to get post from db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	if userId != dbpost.Userid {
@@ -530,11 +535,11 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 	}
 	res, err := deldbPost(id)
 	if err != nil {
-		log.Fatalf("Not able to delete post from db", err)
+		//log.Fatalf("Not able to delete post from db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	if !res {
-		log.Fatalf("Not able to delete post from db", err)
+		//log.Fatalf("Not able to delete post from db", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
