@@ -41,7 +41,7 @@ function App() {
       })
       console.log("After fetchUser")
     }
-  }, [userInfo]);
+  }, []);
 
 /*   const updateFromChild = () => {
     setRefreshPosts(true)

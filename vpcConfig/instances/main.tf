@@ -176,15 +176,19 @@ resource "aws_iam_role_policy" "ssm_slave_policy" {
 
 resource "aws_instance" "jenkins_slave_node" {
   ami                    = var.x86_ami
-  instance_type          = var.worker_instance_type
+  instance_type          = "t3.small"
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
   user_data              = file("${path.module}/scripts/jenkinsslavebootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.jenkins_ec2_instance_profile.id
-  # user_data_replace_on_change = true
+  user_data_replace_on_change = true
   subnet_id                   = var.subnet_1c
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
+
+  root_block_device {
+    volume_size = "12"
+  }
 
   tags = {
     Name      = "JenkinsSlaveHost",
