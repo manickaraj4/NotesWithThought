@@ -235,7 +235,7 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 		case "GET":
 			var user User
 			user.Login = sessionManager.GetString(r.Context(), "login")
-			user.Id = sessionManager.GetInt(r.Context(), "id")
+			user.Id = sessionManager.GetInt64(r.Context(), "id")
 
 			jsonres, err := json.Marshal(user)
 			if err != nil {

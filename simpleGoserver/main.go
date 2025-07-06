@@ -12,7 +12,7 @@ type Post struct {
 }
 
 type User struct {
-	Id    int    `json:"id"`
+	Id    int64  `json:"id"`
 	Login string `json:"login"`
 }
 
