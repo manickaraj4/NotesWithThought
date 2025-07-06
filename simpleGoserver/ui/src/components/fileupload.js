@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Form } from 'react-bootstrap';
+
 
 const uploaddata = async (formData) => {
 
@@ -44,7 +46,7 @@ function FileUploadComponent() {
   return (
     <div>
       <Form.Group controlId="formFileLg" className="mb-3">
-        <Form.Label>Select File to Upload {filetype}</Form.Label>
+        <Form.Label>Select File to Upload</Form.Label>
         <Form.Control type="file" size="sm" onChange={handleFileChange}/>
       </Form.Group>
       <button onClick={handleUpload}>Upload File</button>
