@@ -110,7 +110,7 @@ func githubInit() {
 
 func githubLoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetInt(r.Context(), "id") != 0 {
+	if sessionManager.GetInt64(r.Context(), "id") != 0 {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
@@ -134,7 +134,7 @@ func githubLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func googleLoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetInt(r.Context(), "id") != 0 {
+	if sessionManager.GetInt64(r.Context(), "id") != 0 {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
@@ -160,7 +160,7 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 	if sessionManager.GetString(r.Context(), "platform") != "google" {
 		http.Error(w, "This path is reserved for Google Oauth", http.StatusForbidden)
 	} else {
-		if sessionManager.GetInt(r.Context(), "id") != 0 {
+		if sessionManager.GetInt64(r.Context(), "id") != 0 {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		} else {
 			state := sessionManager.GetString(r.Context(), "state")
@@ -209,7 +209,7 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 	if sessionManager.GetString(r.Context(), "platform") != "github" {
 		http.Error(w, "This path is reserved for Github Oauth", http.StatusForbidden)
 	} else {
-		if sessionManager.GetInt(r.Context(), "id") != 0 {
+		if sessionManager.GetInt64(r.Context(), "id") != 0 {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		} else {
 			state := sessionManager.GetString(r.Context(), "state")
