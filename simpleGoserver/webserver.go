@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 )
 
@@ -71,6 +72,8 @@ func webServerInit() {
 	sessionManager.Cookie.HttpOnly = true
 	sessionManager.Cookie.Secure = true
 	sessionManager.Cookie.Persist = true
+
+	sessionManager.Store = mysqlstore.New(db)
 
 	mux = http.NewServeMux()
 

@@ -4,6 +4,7 @@ go 1.24.1
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/alexedwards/scs/mysqlstore v0.0.0-20250417082927-ab20b3feb5e9 // indirect
 	github.com/alexedwards/scs/v2 v2.8.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.5 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.29.17 // indirect

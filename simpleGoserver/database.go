@@ -38,12 +38,13 @@ func databaseInit() {
 	dbcfg.Addr = db_host + ":3306"
 	dbcfg.DBName = "posts"
 
-	// Get a database handle.
 	var dberr error
 	db, dberr = sql.Open("mysql", dbcfg.FormatDSN())
 	if dberr != nil {
 		log.Fatal(err)
 	}
+
+	defer db.Close()
 
 	pingErr := db.Ping()
 	if pingErr != nil {
