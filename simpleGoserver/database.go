@@ -37,6 +37,7 @@ func databaseInit() {
 	dbcfg.Net = "tcp"
 	dbcfg.Addr = db_host + ":3306"
 	dbcfg.DBName = "posts"
+	dbcfg.ParseTime = true
 
 	var dberr error
 	db, dberr = sql.Open("mysql", dbcfg.FormatDSN())
@@ -44,7 +45,7 @@ func databaseInit() {
 		log.Fatal(err)
 	}
 
-	defer db.Close()
+	//defer db.Close()
 
 	pingErr := db.Ping()
 	if pingErr != nil {

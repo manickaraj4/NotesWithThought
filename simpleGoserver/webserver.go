@@ -67,7 +67,7 @@ func webServerInit() {
 	fsys := dotFileHidingFileSystem{http.Dir("ui/build")}
 
 	sessionManager = scs.New()
-	sessionManager.Lifetime = 5 * time.Minute
+	sessionManager.Lifetime = 2 * time.Hour
 	sessionManager.Cookie.Domain = domain
 	sessionManager.Cookie.HttpOnly = true
 	sessionManager.Cookie.Secure = true
