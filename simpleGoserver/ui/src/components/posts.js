@@ -152,7 +152,6 @@ class Posts extends React.Component {
         </Container>
 
         <Container>
-            <h4>Reload: {this.props.reload}</h4>
             <h2>Your Notes</h2>
             <Table>
                 <thead>

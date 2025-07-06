@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -20,43 +17,23 @@ type DbPost struct {
 
 var (
 	db      *sql.DB
-	db_pass string
 	db_host = os.Getenv("DB_HOST")
 )
 
-func dbconnect() {
+func databaseInit() {
 
 	paramName := "kube_db_secret"
 	withDecryption := true
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	fetchRes, err := ssmFetchParam(paramName, withDecryption)
+
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		log.Fatalf("Failed to get parameter for DB password from SSM, %v", err)
 	}
-
-	ssmClient := ssm.NewFromConfig(cfg)
-
-	input := &ssm.GetParameterInput{
-		Name:           &paramName,
-		WithDecryption: &withDecryption,
-	}
-
-	result, err := ssmClient.GetParameter(context.TODO(), input)
-	if err != nil {
-		log.Fatalf("failed to get parameter, %v", err)
-	}
-
-	if result.Parameter != nil {
-		//fmt.Println("Parameter Value:", *result.Parameter.Value)
-		db_pass = *result.Parameter.Value
-	} else {
-		fmt.Println("Parameter not found.")
-	}
-	// Capture connection properties.
 
 	dbcfg := mysql.NewConfig()
 	dbcfg.User = "admin"
-	dbcfg.Passwd = db_pass
+	dbcfg.Passwd = fetchRes
 	dbcfg.Net = "tcp"
 	dbcfg.Addr = db_host + ":3306"
 	dbcfg.DBName = "posts"
