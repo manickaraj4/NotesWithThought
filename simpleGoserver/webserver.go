@@ -142,7 +142,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetPosts(w http.ResponseWriter, r *http.Request) {
-	userId := sessionManager.GetString(r.Context(), "platform") + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	userId := sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
 	dbposts, err := getdbPostsByUserId(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -175,7 +175,7 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dbp.Body = p.Body
-	dbp.Userid = sessionManager.GetString(r.Context(), "platform") + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	dbp.Userid = sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
 	_, dberr := adddbPost(dbp)
 
 	if dberr != nil {
@@ -189,7 +189,7 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 
 func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 	var p Post
-	userId := sessionManager.GetString(r.Context(), "platform") + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	userId := sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -207,7 +207,7 @@ func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 
 func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 
-	userId := sessionManager.GetString(r.Context(), "platform") + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	userId := sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
