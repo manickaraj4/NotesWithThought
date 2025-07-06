@@ -229,6 +229,9 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 
 func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 
+	log.Println("Inside Auth Handler")
+	log.Println(sessionManager.GetInt(r.Context(), "id"))
+
 	if sessionManager.GetInt(r.Context(), "id") != 0 {
 
 		switch r.Method {
