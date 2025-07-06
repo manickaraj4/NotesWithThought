@@ -189,8 +189,8 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("Google User profile", userInfo.Profile)
 			log.Println("Google User email", userInfo.Email)
 
-			sessionManager.Put(r.Context(), "login", userInfo.Subject)
-			sessionManager.Put(r.Context(), "id", userInfo.Profile)
+			sessionManager.Put(r.Context(), "login", userInfo.Email)
+			sessionManager.Put(r.Context(), "id", userInfo.Subject)
 
 			token, expiry, err := sessionManager.Commit(r.Context())
 
