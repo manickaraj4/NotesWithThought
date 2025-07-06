@@ -22,6 +22,7 @@ RUN go get github.com/go-sql-driver/mysql
 RUN go get github.com/aws/aws-sdk-go-v2/config
 RUN go get github.com/aws/aws-sdk-go-v2/service/ssm
 RUN go get github.com/alexedwards/scs/mysqlstore
+RUN go get github.com/aws/aws-sdk-go-v2/service/s3
 
 RUN go build -v -o /usr/local/bin/app 
 

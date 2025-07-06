@@ -18,15 +18,18 @@ type User struct {
 }
 
 var (
-	domain = os.Getenv("DOMAIN")
-	ctx    context.Context
+	domain   = os.Getenv("DOMAIN")
+	s3bucket = os.Getenv("S3_BUCKET")
+	ctx      context.Context
 )
 
 func main() {
 
 	ctx = context.Background()
+	awsInit()
 	ssmClientInit()
 	databaseInit()
+	s3Init()
 	googleInit()
 	githubInit()
 	webServerInit()

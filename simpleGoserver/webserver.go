@@ -86,6 +86,7 @@ func webServerInit() {
 	mux.HandleFunc("/auth/login/google", googleLoginHandler)
 	mux.HandleFunc("/logout", logoutHandler)
 	mux.HandleFunc("/healthcheck", healthcheckHandler)
+	mux.HandleFunc("/api/fileupload", fileUploadHandler)
 
 	mux.Handle("/", http.FileServer(fsys))
 
@@ -255,6 +256,42 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 
+	} else {
+		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
+	}
+}
+
+func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	if sessionManager.GetString(r.Context(), "id") != "" {
+		switch r.Method {
+		case "POST":
+			r.ParseMultipartForm(20)
+			fileUploaded, handler, err := r.FormFile("file")
+			if err != nil {
+				http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+				return
+			}
+			defer fileUploaded.Close()
+
+			fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+			fmt.Printf("File Size: %+v\n", handler.Size)
+			fmt.Printf("Content Type: %+v\n", handler.Header.Get("Content-Type"))
+
+			response, err := uploadObject(handler.Filename, fileUploaded)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			if response {
+				w.Write(nil)
+			} else {
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 	} else {
 		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
 	}

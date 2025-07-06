@@ -153,6 +153,7 @@ module "go_server_deployment" {
 
   domain     = var.domain
   aws_region = var.aws_region
+  bucket     = var.config_s3_bucket
 } 
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
