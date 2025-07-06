@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
@@ -189,8 +190,13 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("Google User profile", userInfo.Profile)
 			log.Println("Google User email", userInfo.Email)
 
+			googleid, err := strconv.ParseInt(userInfo.Subject, 10, 64)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
 			sessionManager.Put(r.Context(), "login", userInfo.Email)
-			sessionManager.Put(r.Context(), "id", userInfo.Subject)
+			sessionManager.Put(r.Context(), "id", googleid)
 
 			token, expiry, err := sessionManager.Commit(r.Context())
 
