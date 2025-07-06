@@ -111,7 +111,7 @@ func githubInit() {
 
 func githubLoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetInt64(r.Context(), "id") != 0 {
+	if sessionManager.GetString(r.Context(), "id") != "" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
@@ -135,7 +135,7 @@ func githubLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func googleLoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetInt64(r.Context(), "id") != 0 {
+	if sessionManager.GetString(r.Context(), "id") != "" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
@@ -161,7 +161,7 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 	if sessionManager.GetString(r.Context(), "platform") != "google" {
 		http.Error(w, "This path is reserved for Google Oauth", http.StatusForbidden)
 	} else {
-		if sessionManager.GetInt64(r.Context(), "id") != 0 {
+		if sessionManager.GetString(r.Context(), "id") != "" {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		} else {
 			state := sessionManager.GetString(r.Context(), "state")
@@ -190,13 +190,13 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("Google User profile", userInfo.Profile)
 			log.Println("Google User email", userInfo.Email)
 
-			googleid, err := strconv.ParseInt(userInfo.Subject, 10, 64)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			/* 			googleid, err := strconv.ParseInt(userInfo.Subject, 10, 64)
+			   			if err != nil {
+			   				http.Error(w, err.Error(), http.StatusInternalServerError)
+			   			} */
 
 			sessionManager.Put(r.Context(), "login", userInfo.Email)
-			sessionManager.Put(r.Context(), "id", googleid)
+			sessionManager.Put(r.Context(), "id", userInfo.Subject)
 
 			token, expiry, err := sessionManager.Commit(r.Context())
 
@@ -215,7 +215,7 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 	if sessionManager.GetString(r.Context(), "platform") != "github" {
 		http.Error(w, "This path is reserved for Github Oauth", http.StatusForbidden)
 	} else {
-		if sessionManager.GetInt64(r.Context(), "id") != 0 {
+		if sessionManager.GetString(r.Context(), "id") != "" {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		} else {
 			state := sessionManager.GetString(r.Context(), "state")
@@ -248,7 +248,7 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(string(res2C))
 
 			sessionManager.Put(r.Context(), "login", userDetails.Login)
-			sessionManager.Put(r.Context(), "id", userDetails.Id)
+			sessionManager.Put(r.Context(), "id", strconv.FormatInt(userDetails.Id, 10))
 
 			token, expiry, err := sessionManager.Commit(r.Context())
 

@@ -21,7 +21,7 @@ class UserInfo extends React.Component {
   }
 
   handleLogoutClick() {
-    this.setState({userId: 0, userLogin: ""});
+    this.setState({userId: "", userLogin: ""});
     window.location.replace("/logout")
   }
 
@@ -33,7 +33,7 @@ class UserInfo extends React.Component {
 
   render() {
     let button1, button2;
-    if (this.props.id === 0) {
+    if (this.props.sub === "") {
       button1 = <Button variant="success" onClick={this.handleGithubLoginClick}> Login with Github</Button>;
       button2 = <Button variant="success" onClick={this.handleGoogleLoginClick}> Login with Google</Button>;
     } else {

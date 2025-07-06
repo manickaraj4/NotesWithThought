@@ -11,7 +11,7 @@ const fetchUser = async () => {
     if (!response.ok) {
       console.log("User is unauthorized Code: ",response.status)
       return {
-        id : 0,
+        sub : "",
         login: ""
       }
     }
@@ -23,14 +23,14 @@ const fetchUser = async () => {
 function App() {
 
   const [userInfo, setUserInfo] = useState({
-    id : 0,
+    sub : "",
     login: ""
   });
 
 
   useEffect(() => {
     
-    if (userInfo.id === 0) {
+    if (userInfo.sub === "") {
       console.log("Inside useEffect")
       fetchUser().then((res)=> {
         console.log("Inside then")
@@ -42,12 +42,12 @@ function App() {
     } 
   }, []); 
 
-  if(userInfo.id == 0) {
+  if(userInfo.sub === "") {
     return (
       <div>
         <Nav>
           <NavItem>
-            <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
+            <UserInfo sub={userInfo.sub} login={userInfo.login} ></UserInfo>
           </NavItem>
           <NavItem>
           <div >
@@ -75,7 +75,7 @@ function App() {
     <div>
       <Nav>
         <NavItem>
-          <UserInfo id={userInfo.id} login={userInfo.login} ></UserInfo>
+          <UserInfo sub={userInfo.sub} login={userInfo.login} ></UserInfo>
         </NavItem>
       <NavItem>
       <div >

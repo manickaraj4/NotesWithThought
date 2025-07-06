@@ -107,7 +107,7 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
 func postsHandler(w http.ResponseWriter, r *http.Request) {
 
-	if sessionManager.GetInt64(r.Context(), "id") != 0 {
+	if sessionManager.GetString(r.Context(), "id") != "" {
 		switch r.Method {
 		case "GET":
 			handleGetPosts(w, r)
@@ -122,7 +122,7 @@ func postsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	if sessionManager.GetInt64(r.Context(), "id") != 0 {
+	if sessionManager.GetString(r.Context(), "id") != "" {
 		id, err := strconv.Atoi(r.URL.Path[len("/posts/"):])
 		if err != nil {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
@@ -142,7 +142,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetPosts(w http.ResponseWriter, r *http.Request) {
-	userId := sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	userId := sessionManager.GetString(r.Context(), "platform") + ":" + sessionManager.GetString(r.Context(), "id") + ":" + sessionManager.GetString(r.Context(), "login")
 	dbposts, err := getdbPostsByUserId(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -175,7 +175,7 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dbp.Body = p.Body
-	dbp.Userid = sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	dbp.Userid = sessionManager.GetString(r.Context(), "platform") + ":" + sessionManager.GetString(r.Context(), "id") + ":" + sessionManager.GetString(r.Context(), "login")
 	_, dberr := adddbPost(dbp)
 
 	if dberr != nil {
@@ -189,7 +189,7 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 
 func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 	var p Post
-	userId := sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	userId := sessionManager.GetString(r.Context(), "platform") + ":" + sessionManager.GetString(r.Context(), "id") + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -207,7 +207,7 @@ func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 
 func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 
-	userId := sessionManager.GetString(r.Context(), "platform") + ":" + strconv.FormatInt(sessionManager.GetInt64(r.Context(), "id"), 10) + ":" + sessionManager.GetString(r.Context(), "login")
+	userId := sessionManager.GetString(r.Context(), "platform") + ":" + sessionManager.GetString(r.Context(), "id") + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -230,15 +230,15 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Inside Auth Handler")
-	log.Println(sessionManager.GetInt64(r.Context(), "id"))
+	log.Println(sessionManager.GetString(r.Context(), "id"))
 
-	if sessionManager.GetInt64(r.Context(), "id") != 0 {
+	if sessionManager.GetString(r.Context(), "id") != "" {
 
 		switch r.Method {
 		case "GET":
 			var user User
 			user.Login = sessionManager.GetString(r.Context(), "login")
-			user.Id = sessionManager.GetInt64(r.Context(), "id")
+			user.Sub = sessionManager.GetString(r.Context(), "id")
 
 			jsonres, err := json.Marshal(user)
 			if err != nil {
