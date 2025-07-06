@@ -76,7 +76,7 @@ func webServerInit() {
 
 	mux.HandleFunc("/posts", postsHandler)
 	mux.HandleFunc("/posts/", postHandler)
-	mux.HandleFunc("/github/userinfo", userInfoHandler)
+	mux.HandleFunc("/userinfo", userInfoHandler)
 	mux.HandleFunc("/auth/github/callback", githubOauthHandler)
 	mux.HandleFunc("/auth/google/callback", googleOauthHandler)
 	mux.HandleFunc("/auth/login/github", githubLoginHandler)
@@ -239,8 +239,10 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 			jsonres, err := json.Marshal(user)
 			if err != nil {
+				log.Println(err)
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 			}
+			log.Println(jsonres)
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonres)
 		default:

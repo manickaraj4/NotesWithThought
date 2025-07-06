@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { Nav, NavItem, Navbar } from 'react-bootstrap';
 
 const fetchUser = async () => {
-    const response = await fetch('github/userinfo'); 
+    const response = await fetch('userinfo'); 
     console.log("waiting for await")
     if (!response.ok) {
       console.log("User is unauthorized Code: ",response.status)
