@@ -187,7 +187,7 @@ resource "aws_instance" "jenkins_slave_node" {
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
 
   root_block_device {
-    volume_size = "12"
+    volume_size = "15"
   }
 
   tags = {

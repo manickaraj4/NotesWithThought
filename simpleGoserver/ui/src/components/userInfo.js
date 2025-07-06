@@ -4,12 +4,19 @@ import {Button,Container} from 'react-bootstrap';
 class UserInfo extends React.Component {
   constructor(props) {
     super(props);
-    this.handleLoginClick = this.handleLoginClick.bind(this);
+    this.handleGoogleLoginClick = this.handleGoogleLoginClick.bind(this);
+    this.handleGithubLoginClick = this.handleGithubLoginClick.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
   }
 
-  handleLoginClick() {
-    window.location.replace("/auth/login")
+  handleGithubLoginClick() {
+    window.location.replace("/auth/login/github")
+    
+  }
+
+
+  handleGoogleLoginClick() {
+    window.location.replace("/auth/login/google")
     
   }
 
@@ -25,17 +32,19 @@ class UserInfo extends React.Component {
   }
 
   render() {
-    let button;
+    let button1, button2;
     if (this.props.id === 0) {
-      button = <Button variant="success" onClick={this.handleLoginClick}> Login with Github</Button>;
+      button1 = <Button variant="success" onClick={this.handleGithubLoginClick}> Login with Github</Button>;
+      button2 = <Button variant="success" onClick={this.handleGoogleLoginClick}> Login with Google</Button>;
     } else {
-      button = <Button variant="dark" onClick={this.handleLogoutClick}> Log Out </Button>;
+      button1 = <Button variant="dark" onClick={this.handleLogoutClick}> Log Out </Button>;
+      button2 = <div></div>
     }
 
     return (
        <Container>
         <h4>Welcome {this.props.login}</h4>
-        {button}
+        {button1}{button2}
       </Container>
     );
   }

@@ -11,7 +11,7 @@ FROM golang:1.24
 
 WORKDIR /usr/src/app
 
-COPY go.mod main.go database.go /usr/src/app/
+COPY go.mod *.go /usr/src/app/
 COPY --from=build /usr/src/app/ui/ /usr/src/app/ui/
 
 RUN go get github.com/coreos/go-oidc/v3/oidc
