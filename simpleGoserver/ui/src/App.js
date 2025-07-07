@@ -1,9 +1,8 @@
-import logo from './logo.svg';
 import './App.css';
 import UserInfo from './components/userInfo';
 import Posts from './components/posts';
+import BannerDisplay from "./components/banner"
 import { useState, useEffect } from 'react';
-import { Nav, NavItem, Navbar } from 'react-bootstrap';
 
 const fetchUser = async () => {
     const response = await fetch('userinfo'); 
@@ -45,27 +44,8 @@ function App() {
   if(userInfo.sub === "") {
     return (
       <div>
-        <Nav>
-          <NavItem>
-            <UserInfo sub={userInfo.sub} login={userInfo.login} ></UserInfo>
-          </NavItem>
-          <NavItem>
-          <div >
-            <p>
-              Edit <code>src/App.js</code> and save to reload.
-            </p>
-            <a
-              className="App-link"
-              href="https://reactjs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn React
-            </a>
-          </div>
-    </NavItem>
-      </Nav>
-      
+          <BannerDisplay></BannerDisplay>
+          <UserInfo sub={userInfo.sub} login={userInfo.login} ></UserInfo>
       </div>
     )
   }
@@ -73,30 +53,9 @@ function App() {
   return (
     
     <div>
-      <Nav>
-        <NavItem>
-          <UserInfo sub={userInfo.sub} login={userInfo.login} ></UserInfo>
-        </NavItem>
-      <NavItem>
-      <div >
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </div>
-    </NavItem>
-      </Nav>
-      <Posts>
-
-      </Posts>
-  
+        <BannerDisplay></BannerDisplay>
+        <UserInfo sub={userInfo.sub} login={userInfo.login} ></UserInfo>
+        <Posts></Posts>
     </div>
   );
 }

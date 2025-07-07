@@ -1,5 +1,5 @@
 import React from "react";
-import {Button,Container} from 'react-bootstrap';
+import {Button,Container, Row, Col} from 'react-bootstrap';
 
 class UserInfo extends React.Component {
   constructor(props) {
@@ -42,9 +42,20 @@ class UserInfo extends React.Component {
     }
 
     return (
-       <Container>
-        <h4>Welcome {this.props.login}</h4>
-        {button1}{button2}
+       <Container className="float-right">
+          <Row>
+            <Col className="float-right">
+              <h4>Welcome {this.props.login}</h4>
+            </Col>
+          </Row>
+          <Row>
+            <Col className="float-right">
+              {button1}
+            </Col>
+            <Col className="float-right">
+              {button2}
+            </Col>
+          </Row>
       </Container>
     );
   }

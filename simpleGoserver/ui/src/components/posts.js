@@ -146,12 +146,12 @@ class Posts extends React.Component {
             <h2>Here to take a note for yourself</h2>
             <InputGroup>
                 <InputGroup.Text id="postbody" >Type Something</InputGroup.Text>
-                <Form.Control value={this.state.currentPostBody} onChange={this.handleBodyChange} />
+                <Form.Control as="textarea" value={this.state.currentPostBody} onChange={this.handleBodyChange} />
             </InputGroup>
             <Button onClick={this.handleSubmitClick}>Submit Post</Button>
         </Container>
 
-        <Container>
+        <Container className="border">
             <h2>Your Notes</h2>
             <Table>
                 <thead>
