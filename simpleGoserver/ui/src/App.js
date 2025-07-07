@@ -66,7 +66,7 @@ function App() {
           </div>
     </NavItem>
       </Nav>
-       <FileUploadComponent></FileUploadComponent>
+      
       </div>
     )
   }
