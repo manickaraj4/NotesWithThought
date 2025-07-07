@@ -2,7 +2,6 @@ import logo from './logo.svg';
 import './App.css';
 import UserInfo from './components/userInfo';
 import Posts from './components/posts';
-import FileUploadComponent from './components/fileupload';
 import { useState, useEffect } from 'react';
 import { Nav, NavItem, Navbar } from 'react-bootstrap';
 
@@ -94,8 +93,10 @@ function App() {
       </div>
     </NavItem>
       </Nav>
-      <Posts></Posts>
-      <FileUploadComponent></FileUploadComponent>
+      <Posts>
+
+      </Posts>
+  
     </div>
   );
 }

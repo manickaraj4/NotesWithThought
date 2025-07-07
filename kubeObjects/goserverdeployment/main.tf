@@ -12,7 +12,7 @@ data "aws_ssm_parameter" "db_host" {
 }
 
 
-/* data "aws_ssm_parameter" "github_oauth_id" {
+data "aws_ssm_parameter" "github_oauth_id" {
   name = "GithubOAuthID"
   with_decryption = true
 }
@@ -20,7 +20,7 @@ data "aws_ssm_parameter" "db_host" {
 data "aws_ssm_parameter" "github_oauth_secret" {
   name = "GithubOAuthSecret"
   with_decryption = true
-} */
+}
 
 /* resource "kubernetes_secret" "docker_token_secret-default" {
   metadata {
@@ -84,17 +84,20 @@ resource "kubernetes_deployment" "go_server_deployment" {
           }
 
           env {
+            name = "GITHUB_OAUTH2_CLIENT_ID" 
+            value = "${data.aws_ssm_parameter.github_oauth_id.value}"
+          }
+          env {
+            name = "GITHUB_OAUTH2_CLIENT_SECRET" 
+            value = "${data.aws_ssm_parameter.github_oauth_secret.value}"
+          }
+          env {
             name = "DOMAIN" 
             value = "${var.domain}"
           }
           env {
             name = "AWS_REGION" 
             value = "${var.aws_region}"
-          }
-
-          env {
-            name = "S3_BUCKET"
-            value = ${var.bucket}
           }
 
           env {

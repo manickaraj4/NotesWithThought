@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
@@ -13,7 +15,12 @@ var (
 
 func ssmClientInit() {
 
-	ssmClient = ssm.NewFromConfig(awscfg)
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
+	}
+
+	ssmClient = ssm.NewFromConfig(cfg)
 }
 
 func ssmFetchParam(paramName string, withDecryption bool) (string, error) {
