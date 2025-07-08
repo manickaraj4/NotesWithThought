@@ -77,6 +77,8 @@ apiServer:
   extraArgs:
   - name: "token-auth-file"
     value: "/etc/kubernetes/static-token"
+  - name: "service-account-issuer"
+    value: "https://kubeadmin.${domain}"
   extraVolumes:
     - name: static-token
       hostPath: /etc/kubernetes/static-token

@@ -202,35 +202,3 @@ resource "kubernetes_ingress_v1" "post_service_ingress" {
     }
   }
 }
-
-resource "kubernetes_ingress_v1" "kubernetes_apiserver_ingress" {
-  metadata {
-    name = "kubernetes-apiserver-ingress"
-    annotations = {
-      "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
-      #"nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
-    }
-  }
-
-  spec {
-    ingress_class_name = "nginx"
-
-    rule {
-      host = "kubeadmin.${var.domain}"
-      http {
-        path {
-          backend {
-            service {
-              name = "kubernetes"
-              port {
-                number = 443
-              }
-            }
-          }
-          path      = "/"
-          path_type = "Prefix"
-        }
-      }
-    }
-  }
-} 

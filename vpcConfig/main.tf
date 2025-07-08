@@ -70,6 +70,7 @@ module "servers" {
   config_s3_bucket = var.config_s3_bucket
   lb_sg_id         = module.lb.alb_sg
   vpc_id           = module.vpc.vpc_id
+  domain           = var.domain
 
   # deploy instances on public subnet if interface endpoints are not enabled.
   subnet_1a         = var.deploy_interface_endpoints ? module.vpc.private_subnet_1a : module.vpc.public_subnet_1a
@@ -102,5 +103,24 @@ module "dns_record_update" {
 
 module "ecrrepo" {
   source = "./ecr"
+}
+
+# add only when cluster is up and pod identity webhook and irsa expose is deployed, Otherwise this will fail
+resource "aws_iam_openid_connect_provider" "iam_oidc_provider" {
+  url = "https://kubeadmin.${var.domain}"
+
+  client_id_list = [
+    "sts.amazonaws.com",
+  ]
+}
+
+module "irsa_roles" {
+  depends_on = [aws_iam_openid_connect_provider.iam_oidc_provider]
+  for_each = var.serviceaccount_map
+  source = "./irsaroles"
+
+  namespace = each.value.namespace
+  serviceaccount = each.value.serviceaccount
+  policyfilename = each.value.policyfilename
 }
 

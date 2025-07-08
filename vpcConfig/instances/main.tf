@@ -38,12 +38,12 @@ resource "aws_iam_role_policy" "ecr_pull_cache_policy" {
   policy = templatefile("${path.module}/scripts/pullcacheecrpolicy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}" })
 }
 
-resource "aws_iam_role_policy" "ebs_csi_policy" {
+/* resource "aws_iam_role_policy" "ebs_csi_policy" {
   name = "ebs_csi"
   role = aws_iam_role.ec2_instance_role.id
 
   policy = file("${path.module}/scripts/ebscsidriverpolicy.json")
-}
+} */
 
 resource "aws_iam_role_policy" "ssm_policy" {
   name = "ssm_policy"
@@ -52,12 +52,12 @@ resource "aws_iam_role_policy" "ssm_policy" {
   policy = templatefile("${path.module}/scripts/ssmec2policy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}", bucket = "${var.config_s3_bucket}" })
 }
 
-resource "aws_iam_role_policy" "loadbalancer_controller_policy" {
+/* resource "aws_iam_role_policy" "loadbalancer_controller_policy" {
   name = "loadbalancer_controller_policy"
   role = aws_iam_role.ec2_instance_role.id
 
   policy = file("${path.module}/scripts/loadbalancercontrollerpolicy.json")
-}
+} */
 
 /* resource "aws_security_group" "allow_ssh" {
   vpc_id = var.vpc_id
@@ -119,7 +119,7 @@ resource "aws_instance" "master_server" {
   instance_type          = var.master_instance_type
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
-  user_data              = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}" })
+  user_data              = templatefile("${path.module}/scripts/masterbootstrap.sh", { region = "${var.aws_region}", bucket = "${var.config_s3_bucket}", domain = "${var.domain}" })
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
   # user_data_replace_on_change = true
   subnet_id                   = var.subnet_1a
@@ -181,7 +181,7 @@ resource "aws_instance" "jenkins_slave_node" {
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
   user_data              = file("${path.module}/scripts/jenkinsslavebootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.jenkins_ec2_instance_profile.id
-  user_data_replace_on_change = true
+  #user_data_replace_on_change = true
   subnet_id                   = var.subnet_1c
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0

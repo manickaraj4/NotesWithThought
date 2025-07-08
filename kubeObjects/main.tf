@@ -155,6 +155,19 @@ module "go_server_deployment" {
   aws_region = var.aws_region
 } 
 
+module "irsa_expose_deployment" {
+  depends_on = [helm_release.flannel_cni]
+  source     = "./irsaexpose"
+
+  domain     = var.domain
+} 
+
+# removing this from state as it causes issues with terraform
+/* module "irsa_webhook_deployment" {
+  depends_on = [helm_release.flannel_cni, module.irsa_expose_deployment, helm_release.cert_manager]
+  source     = "./irsawebhook"
+}  */
+
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
     name = "ingress-nginx"
@@ -185,6 +198,13 @@ resource "helm_release" "aws_ebs_csi_driver" {
   cleanup_on_fail = true
   atomic          = true
   namespace       = "kube-system"
+
+  set = [
+    {
+      name  = "controller.serviceAccount.annotations.kubernetes\\/role-arn"
+      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/kube-system_ebs-csi-controller-sa"
+    }
+  ]
 
   /*   values = [
     yamlencode(yamldecode(templatefile("${path.module}/awsloadbalancercontroller/charts/values.yaml", { region = "${var.aws_region}", repo = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller", tag = "v2.13.3", imagepullsecrets = "docker-cfg-current-account" })))
@@ -268,6 +288,16 @@ resource "helm_release" "nginx_ingress" {
   ]
 }
 
+resource "kubernetes_config_map_v1_data" "nginx_cm_edit" {
+  depends_on = [helm_release.nginx_ingress]
+  metadata {
+    name = "ingress-nginx-controller"
+  }
+  data = {
+    "strict-validate-path-type" = false
+  }
+}
+
 resource "kubernetes_storage_class_v1" "ebs_storage_class" {
   depends_on          = [helm_release.aws_ebs_csi_driver]
   storage_provisioner = "ebs.csi.aws.com"
@@ -277,6 +307,27 @@ resource "kubernetes_storage_class_v1" "ebs_storage_class" {
     name = "ebs-sc"
   }
 }
+
+resource "helm_release" "cert_manager" {
+  depends_on      = [helm_release.flannel_cni]
+  name            = "cert-manager"
+  repository      = "https://charts.jetstack.io"
+  chart           = "cert-manager"
+  cleanup_on_fail = true
+  atomic          = true
+
+  set = [
+    {
+      name  = "crds.enabled"
+      value = true
+    },
+    {
+      name  = "namespace"
+      value = "default"
+    }
+  ]
+}
+
 
 /*
 resource "helm_release" "keycloak_chart" {

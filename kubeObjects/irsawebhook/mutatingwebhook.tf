@@ -1,0 +1,54 @@
+resource "kubernetes_manifest" "mutatingwebhookconfiguration_pod_identity_webhook" {
+  manifest = {
+    "apiVersion" = "admissionregistration.k8s.io/v1"
+    "kind" = "MutatingWebhookConfiguration"
+    "metadata" = {
+      "annotations" = {
+        "cert-manager.io/inject-ca-from" = "default/pod-identity-webhook"
+      }
+      "name" = "pod-identity-webhook"
+    }
+    "webhooks" = [
+      {
+        "admissionReviewVersions" = [
+          "v1beta1",
+        ]
+        "clientConfig" = {
+          "service" = {
+            "name" = "pod-identity-webhook"
+            "namespace" = "default"
+            "path" = "/mutate"
+          }
+        }
+        "failurePolicy" = "Ignore"
+        "name" = "pod-identity-webhook.amazonaws.com"
+        "objectSelector" = {
+          "matchExpressions" = [
+            {
+              "key" = "eks.amazonaws.com/skip-pod-identity-webhook"
+              "operator" = "DoesNotExist"
+              "values" = []
+            },
+          ]
+        }
+        "rules" = [
+          {
+            "apiGroups" = [
+              "",
+            ]
+            "apiVersions" = [
+              "v1",
+            ]
+            "operations" = [
+              "CREATE",
+            ]
+            "resources" = [
+              "pods",
+            ]
+          },
+        ]
+        "sideEffects" = "None"
+      },
+    ]
+  }
+}

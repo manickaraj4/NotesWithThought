@@ -55,3 +55,8 @@ variable "in_private_subnet" {
   type = bool
 }
 
+variable "domain" {
+  type = string
+}
+
+

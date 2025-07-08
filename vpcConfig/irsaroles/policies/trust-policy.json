@@ -1,0 +1,18 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::${account_id}:oidc-provider/kubeadmin.${domain}"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "kubeadmin.manicks.xyz:sub": "system:serviceaccount:${ns}:${sa}",
+                    "kubeadmin.manicks.xyz:aud": "sts.amazonaws.com"
+                }
+            }
+        }
+    ]
+}
