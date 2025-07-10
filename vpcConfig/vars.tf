@@ -25,8 +25,8 @@ variable "deploy_interface_endpoints" {
 
 variable "serviceaccount_map" {
   type = map(object({
-    namespace = string
+    namespace      = string
     serviceaccount = string
-    policyfilename = string 
+    policyfilename = string
   }))
 }

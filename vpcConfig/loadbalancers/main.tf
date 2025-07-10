@@ -214,11 +214,17 @@ resource "aws_lb_target_group" "worker_nginx_tg" {
   protocol = "TLS"
   vpc_id   = var.vpc_id
   health_check {
-    path     = "/livez"
-    port     = 30008
+    path     = "/"
+    port     = 30007
     protocol = "HTTP"
-    matcher  = "200,202"
+    matcher  = "400-404"
   }
+}
+
+resource "aws_lb_target_group_attachment" "master_https_attachment" {
+  target_group_arn = aws_lb_target_group.worker_nginx_tg.arn
+  target_id        = var.master_node
+  port             = 30008
 }
 
 resource "aws_lb_target_group_attachment" "worker_https_attachment" {

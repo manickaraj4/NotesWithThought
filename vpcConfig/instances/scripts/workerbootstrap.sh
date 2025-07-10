@@ -62,6 +62,18 @@ providers:
     defaultCacheDuration: 12h
 EOF
 
+#sudo mkdir -p /etc/systemd/system/kubelet.service.d
+
+# cat <<EOF | sudo tee /etc/systemd/system/kubelet.service.d/local-overrides.conf
+# Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml --image-credential-provider-config=/etc/kubernetes/kubeletcredentialconfig.yaml --image-credential-provider-bin-dir=/bin"
+# EOF
+
 sudo systemctl enable kubelet
 
 sudo `aws ssm get-parameter --name kube_join_command --with-decryption --region ${region} | jq -r ".Parameter.Value"`
+
+
+sudo sed -i '6i Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml --image-credential-provider-config=/etc/kubernetes/kubeletcredentialconfig.yaml --image-credential-provider-bin-dir=/bin"' /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet

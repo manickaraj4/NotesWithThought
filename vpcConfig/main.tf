@@ -116,10 +116,10 @@ resource "aws_iam_openid_connect_provider" "iam_oidc_provider" {
 
 module "irsa_roles" {
   depends_on = [aws_iam_openid_connect_provider.iam_oidc_provider]
-  for_each = var.serviceaccount_map
-  source = "./irsaroles"
+  for_each   = var.serviceaccount_map
+  source     = "./irsaroles"
 
-  namespace = each.value.namespace
+  namespace      = each.value.namespace
   serviceaccount = each.value.serviceaccount
   policyfilename = each.value.policyfilename
 }

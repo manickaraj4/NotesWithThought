@@ -5,7 +5,7 @@ resource "aws_key_pair" "deployer" {
 
 resource "time_sleep" "wait_300_seconds" {
   depends_on      = [aws_instance.master_server]
-  create_duration = "240s"
+  create_duration = "180s"
 }
 
 data "aws_caller_identity" "current" {}
@@ -126,22 +126,29 @@ resource "aws_instance" "master_server" {
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 2
+  }
+
   tags = {
     Name      = "masterServer",
     ManagedBy = "Terraform"
   }
 }
 
+
 resource "aws_instance" "worker_node" {
   depends_on             = [time_sleep.wait_300_seconds]
   ami                    = var.x86_ami
-  instance_type          = var.worker_instance_type
+  instance_type          = "t3a.medium"
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id, aws_security_group.allow_all_from_lb.id]
   user_data              = templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" })
   iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.id
   # user_data_replace_on_change = true
-  subnet_id                   = var.subnet_1b
+  subnet_id                   = var.subnet_1a
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
 
@@ -150,6 +157,7 @@ resource "aws_instance" "worker_node" {
     ManagedBy = "Terraform"
   }
 }
+
 
 resource "aws_iam_role" "jenkins_ec2_instance_role" {
   name               = "jenkins_ec2_instance_role"
@@ -174,15 +182,16 @@ resource "aws_iam_role_policy" "ssm_slave_policy" {
   policy = templatefile("${path.module}/scripts/ssmec2policy.json", { region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}", bucket = "${var.config_s3_bucket}" })
 }
 
+/*
 resource "aws_instance" "jenkins_slave_node" {
   ami                    = var.x86_ami
-  instance_type          = "t3.small"
+  instance_type          = "t3a.medium"
   key_name               = aws_key_pair.deployer.id
   vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
   user_data              = file("${path.module}/scripts/jenkinsslavebootstrap.sh")
   iam_instance_profile   = aws_iam_instance_profile.jenkins_ec2_instance_profile.id
   #user_data_replace_on_change = true
-  subnet_id                   = var.subnet_1c
+  subnet_id                   = var.subnet_1a
   associate_public_ip_address = !var.in_private_subnet ? true : false
   ipv6_address_count          = var.in_private_subnet ? 1 : 0
 
@@ -193,5 +202,66 @@ resource "aws_instance" "jenkins_slave_node" {
   tags = {
     Name      = "JenkinsSlaveHost",
     ManagedBy = "Terraform"
+  }
+}
+*/
+
+resource "aws_launch_template" "worker_node_template" {
+  name = "workernodes"
+
+  disable_api_stop        = false
+  disable_api_termination = false
+
+  ebs_optimized = true
+
+  iam_instance_profile {
+    arn = aws_iam_instance_profile.ec2_instance_profile.arn
+  }
+
+  image_id = var.x86_ami
+
+  instance_initiated_shutdown_behavior = "terminate"
+
+  instance_type = var.worker_instance_type
+
+  key_name = aws_key_pair.deployer.id
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 2
+    instance_metadata_tags      = "enabled"
+  }
+
+  monitoring {
+    enabled = true
+  }
+
+  vpc_security_group_ids = [aws_security_group.allow_all_tcp_between_nodes.id]
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      ManagedBy    = "Terraform"
+      InstanceType = "Worker"
+    }
+  }
+
+  user_data = base64encode(templatefile("${path.module}/scripts/workerbootstrap.sh", { region = "${var.aws_region}" }))
+}
+
+resource "aws_autoscaling_group" "worker_asg" {
+  depends_on          = [time_sleep.wait_300_seconds]
+  name                = "worker_asg"
+  # availability_zones  = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
+  vpc_zone_identifier = [var.subnet_1a]
+  desired_capacity    = 1
+  max_size            = 4
+  min_size            = 1
+
+  launch_template {
+    id      = aws_launch_template.worker_node_template.id
+    version = "$Latest"
   }
 }

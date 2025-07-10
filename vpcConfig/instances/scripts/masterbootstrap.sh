@@ -129,3 +129,6 @@ for node in $( kubectl get nodes -o json | jq -r '.items[] | select(.metadata.la
   do kubectl taint node $node node-role.kubernetes.io/control-plane:NoSchedule- 
 done
 
+echo "0 0 * * * ec2-user /home/ec2-user/cronjob" | sudo tee -a /etc/crontab
+echo 'aws ssm put-parameter --name kube_join_command --value "$(sudo kubeadm token create --print-join-command)" --overwrite --region ${region}' > /home/ec2-user/cronjob
+sudo chmod 755 /home/ec2-user/cronjob

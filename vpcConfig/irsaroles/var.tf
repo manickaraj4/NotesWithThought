@@ -14,13 +14,13 @@ variable "domain" {
 }
 
 variable "namespace" {
-  type    = string
+  type = string
 }
 
 variable "serviceaccount" {
-  type    = string
+  type = string
 }
 
 variable "policyfilename" {
-  type    = string
+  type = string
 }

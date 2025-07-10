@@ -20,6 +20,9 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
           }
         }
         "spec" = {
+          "nodeSelector" = {
+             "kubernetes.io/arch" = "arm64"
+          }
           "containers" = [
             {
               "command" = [

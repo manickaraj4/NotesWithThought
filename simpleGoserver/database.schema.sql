@@ -9,3 +9,8 @@ CREATE TABLE sessions (
 );
 
 CREATE INDEX sessions_expiry_idx ON sessions (expiry);
+
+
+CREATE USER 'prometheus'@'%' IDENTIFIED WITH mysql_native_password BY 'password'
+
+GRANT ALL ON '%'.* TO 'prometheus'@'%';
