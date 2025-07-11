@@ -71,6 +71,7 @@ module "servers" {
   lb_sg_id         = module.lb.alb_sg
   vpc_id           = module.vpc.vpc_id
   domain           = var.domain
+  ssh_key_pub      = var.ssh_key_pub
 
   # deploy instances on public subnet if interface endpoints are not enabled.
   subnet_1a         = var.deploy_interface_endpoints ? module.vpc.private_subnet_1a : module.vpc.public_subnet_1a

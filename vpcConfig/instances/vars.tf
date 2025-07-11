@@ -1,5 +1,4 @@
 variable "ssh_key_pub" {
-  default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGW9uO5m+sTquPQV6CsaQRZ+JhqmAAxArvluSRs5FINQ manickaraj.km@LT8649"
   type    = string
 }
 

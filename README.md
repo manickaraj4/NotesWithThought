@@ -37,10 +37,10 @@ terraform apply
 ### General Notes: 
 - Some components might have interdepency on deployed components. Comment out the resources that are creating problems and deploy again afterwards.
 - Domain update API is using space ship. You can use your own vender APIs
-- CNI tested flannel and VPC-CNI.
+- CNI tested are flannel and VPC-CNI.
 - Jenkins is installed via helm and exposed on sub-domain `jenkins`
 - Grafana is installed via helm and exposed on sub-domaina `grafana`
-- IRSA is implemented so we can exchanage service account tokens for AWS credentials. Kuberenetes API server is exposed on sub-domain `kubadmin`.
+- IRSA is implemented so we can exchange service account tokens for AWS credentials. Kuberenetes API server is exposed on sub-domain `kubadmin`.
 - Nginx is used for Ingress and NLB is used as Loadbalancer to accept public traffic.
 - Contains a sample note taking application deployment based on Go and React - Provides Oauth authentication.
 - Used RDS as database
