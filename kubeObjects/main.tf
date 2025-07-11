@@ -237,7 +237,15 @@ resource "helm_release" "prometheus_server" {
   set = [
     {
       name  = "server.persistentVolume.enabled"
-      value = false
+      value = true
+    },
+    {
+      name  = "server.persistentVolume.size"
+      value = "2Gi"
+    },
+    {
+      name  = "server.persistentVolume.storageClass"
+      value = "ebs-sc"
     },
     {
       name  = "alertmanager.persistence.enabled"
@@ -321,7 +329,15 @@ resource "helm_release" "grafana_server" {
   set = [
     {
       name  = "persistence.enabled"
-      value = false
+      value = true
+    },
+    {
+      name  = "persistence.size"
+      value = "2Gi"
+    },
+    {
+      name  = "persistence.storageClassName"
+      value = "ebs-sc"
     },
     {
       name  = "admin.existingSecret"
@@ -353,11 +369,16 @@ resource "helm_release" "grafana_server" {
 } */
 
 
+
 # removing this from state as it causes issues with terraform
-/* module "irsa_webhook_deployment" {
+/*
+module "irsa_webhook_deployment_kube_system" {
   depends_on = [helm_release.flannel_cni, module.irsa_expose_deployment, helm_release.cert_manager]
   source     = "./irsawebhook"
-} */
+
+  ns         = "kube-system"
+} 
+*/
 
 /* resource "kubernetes_namespace" "nginx_ingress_ns" {
   metadata {
@@ -407,14 +428,14 @@ resource "helm_release" "aws_ebs_csi_driver" {
   ] */
 }
 
-resource "helm_release" "jenkins_deployment" {
+
+resource "helm_release" "jenkins_deployment_again" {
   depends_on      = [helm_release.flannel_cni, helm_release.aws_ebs_csi_driver, helm_release.nginx_ingress, kubernetes_storage_class_v1.ebs_storage_class]
   name            = "jenkins"
   repository      = "https://charts.jenkins.io"
   chart           = "jenkins"
   cleanup_on_fail = true
   atomic          = true
-  namespace       = "kube-system"
 
   set = [
     {
@@ -437,10 +458,6 @@ resource "helm_release" "jenkins_deployment" {
       name  = "controller.nodeSelector.kubernetes\\.io\\/arch"
       value = "amd64"
     },
-    /*     {
-      name  = "controller.affinity"
-      value = yamlencode(yamldecode(file("${path.module}/jenkinsdeploy/affinityselector.yaml")))
-    }, */
     {
       name  = "persistence.enabled"
       value = true
@@ -448,13 +465,14 @@ resource "helm_release" "jenkins_deployment" {
     {
       name  = "persistence.storageClass"
       value = "ebs-sc"
+    },
+    {
+      name  = "persistence.size"
+      value = "2Gi"
     }
   ]
-
-  /*   values = [
-    yamlencode(yamldecode(templatefile("${path.module}/jenkinsdeploy/charts/values.yaml", { domain = "jenkins.${var.domain}"})))
-  ]  */
 }
+
 
 resource "helm_release" "nginx_ingress" {
   depends_on      = [helm_release.flannel_cni]

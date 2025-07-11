@@ -19,4 +19,9 @@ serviceaccount_map = {
     serviceaccount = "cluster-autoscaler"
     policyfilename = "clusterautoscalerpolicy.json"
   }
+  "goserver" = {
+    namespace      = "default"
+    serviceaccount = "go-server-account"
+    policyfilename = "ssmpolicy.json"
+  }
 }

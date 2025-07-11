@@ -129,7 +129,7 @@ resource "aws_instance" "master_server" {
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "optional"
-    http_put_response_hop_limit = 2
+    http_put_response_hop_limit = 1
   }
 
   tags = {
@@ -156,6 +156,13 @@ resource "aws_instance" "worker_node" {
     Name      = "workerNode",
     ManagedBy = "Terraform"
   }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 1
+  }
+
 }
 
 
@@ -229,7 +236,7 @@ resource "aws_launch_template" "worker_node_template" {
   metadata_options {
     http_endpoint               = "enabled"
     http_tokens                 = "optional"
-    http_put_response_hop_limit = 2
+    http_put_response_hop_limit = 1
     instance_metadata_tags      = "enabled"
   }
 

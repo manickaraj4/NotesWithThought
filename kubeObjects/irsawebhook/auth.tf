@@ -3,8 +3,8 @@ resource "kubernetes_manifest" "serviceaccount_pod_identity_webhook" {
     "apiVersion" = "v1"
     "kind" = "ServiceAccount"
     "metadata" = {
-      "name" = "pod-identity-webhook"
-      "namespace" = "default"
+      "name" = "pod-identity-webhook-${var.ns}"
+      "namespace" = "${var.ns}"
     }
   }
 }
@@ -15,7 +15,7 @@ resource "kubernetes_manifest" "role_pod_identity_webhook" {
     "kind" = "Role"
     "metadata" = {
       "name" = "pod-identity-webhook"
-      "namespace" = "default"
+      "namespace" = "${var.ns}"
     }
     "rules" = [
       {
@@ -55,7 +55,7 @@ resource "kubernetes_manifest" "rolebinding_pod_identity_webhook" {
     "kind" = "RoleBinding"
     "metadata" = {
       "name" = "pod-identity-webhook"
-      "namespace" = "default"
+      "namespace" = "${var.ns}"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
@@ -65,8 +65,8 @@ resource "kubernetes_manifest" "rolebinding_pod_identity_webhook" {
     "subjects" = [
       {
         "kind" = "ServiceAccount"
-        "name" = "pod-identity-webhook"
-        "namespace" = "default"
+        "name" = "pod-identity-webhook-${var.ns}"
+        "namespace" = "${var.ns}"
       },
     ]
   }
@@ -77,7 +77,7 @@ resource "kubernetes_manifest" "clusterrole_pod_identity_webhook" {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
     "kind" = "ClusterRole"
     "metadata" = {
-      "name" = "pod-identity-webhook"
+      "name" = "pod-identity-webhook-${var.ns}"
     }
     "rules" = [
       {
@@ -116,18 +116,18 @@ resource "kubernetes_manifest" "clusterrolebinding_pod_identity_webhook" {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
     "kind" = "ClusterRoleBinding"
     "metadata" = {
-      "name" = "pod-identity-webhook"
+      "name" = "pod-identity-webhook-${var.ns}"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
       "kind" = "ClusterRole"
-      "name" = "pod-identity-webhook"
+      "name" = "pod-identity-webhook-${var.ns}"
     }
     "subjects" = [
       {
         "kind" = "ServiceAccount"
-        "name" = "pod-identity-webhook"
-        "namespace" = "default"
+        "name" = "pod-identity-webhook-${var.ns}"
+        "namespace" = "${var.ns}"
       },
     ]
   }

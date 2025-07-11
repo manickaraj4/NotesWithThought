@@ -119,6 +119,7 @@ module "irsa_roles" {
   for_each   = var.serviceaccount_map
   source     = "./irsaroles"
 
+  aws_region     = var.aws_region
   namespace      = each.value.namespace
   serviceaccount = each.value.serviceaccount
   policyfilename = each.value.policyfilename

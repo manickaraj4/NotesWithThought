@@ -4,9 +4,9 @@ resource "kubernetes_manifest" "mutatingwebhookconfiguration_pod_identity_webhoo
     "kind" = "MutatingWebhookConfiguration"
     "metadata" = {
       "annotations" = {
-        "cert-manager.io/inject-ca-from" = "default/pod-identity-webhook"
+        "cert-manager.io/inject-ca-from" = "${var.ns}/pod-identity-webhook"
       }
-      "name" = "pod-identity-webhook"
+      "name" = "pod-identity-webhook-${var.ns}"
     }
     "webhooks" = [
       {
@@ -16,7 +16,7 @@ resource "kubernetes_manifest" "mutatingwebhookconfiguration_pod_identity_webhoo
         "clientConfig" = {
           "service" = {
             "name" = "pod-identity-webhook"
-            "namespace" = "default"
+            "namespace" = "${var.ns}"
             "path" = "/mutate"
           }
         }

@@ -4,7 +4,7 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
     "kind" = "Deployment"
     "metadata" = {
       "name" = "pod-identity-webhook"
-      "namespace" = "default"
+      "namespace" = "${var.ns}"
     }
     "spec" = {
       "replicas" = 1
@@ -28,7 +28,7 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
               "command" = [
                 "/webhook",
                 "--in-cluster=false",
-                "--namespace=default",
+                "--namespace=${var.ns}",
                 "--service-name=pod-identity-webhook",
                 "--annotation-prefix=kubernetes",
                 "--token-audience=sts.amazonaws.com",
@@ -47,7 +47,7 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
               ]
             },
           ]
-          "serviceAccountName" = "pod-identity-webhook"
+          "serviceAccountName" = "pod-identity-webhook-${var.ns}"
           "volumes" = [
             {
               "name" = "cert"
@@ -67,7 +67,7 @@ resource "kubernetes_manifest" "clusterissuer_selfsigned" {
     "apiVersion" = "cert-manager.io/v1"
     "kind" = "ClusterIssuer"
     "metadata" = {
-      "name" = "selfsigned"
+      "name" = "selfsigned-${var.ns}"
     }
     "spec" = {
       "selfSigned" = {}
@@ -81,15 +81,15 @@ resource "kubernetes_manifest" "certificate_pod_identity_webhook" {
     "kind" = "Certificate"
     "metadata" = {
       "name" = "pod-identity-webhook"
-      "namespace" = "default"
+      "namespace" = "${var.ns}"
     }
     "spec" = {
-      "commonName" = "pod-identity-webhook.default.svc"
+      "commonName" = "pod-identity-webhook.${var.ns}.svc"
       "dnsNames" = [
         "pod-identity-webhook",
-        "pod-identity-webhook.default",
-        "pod-identity-webhook.default.svc",
-        "pod-identity-webhook.default.svc.local",
+        "pod-identity-webhook.${var.ns}",
+        "pod-identity-webhook.${var.ns}.svc",
+        "pod-identity-webhook.${var.ns}.svc.local",
       ]
       "duration" = "2160h"
       "isCA" = true

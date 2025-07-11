@@ -42,6 +42,16 @@ data "aws_ssm_parameter" "github_oauth_secret" {
   }
 } */
 
+resource "kubernetes_service_account" "go_server_sa" {
+  metadata {
+    name = "go-server-account"
+    annotations = {
+      "kubernetes/role-arn" = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/default_go-server-account"
+    }
+  }
+}
+
+
 resource "kubernetes_deployment" "go_server_deployment" {
   metadata {
     name = "posts-app"
@@ -75,7 +85,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
         node_selector = {
           "kubernetes.io/arch" = "amd64"
         }
-
+        service_account_name = "go-server-account"
         container {
           image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/apprepo:latest"
           name  = "goserver"

@@ -9,7 +9,7 @@ resource "kubernetes_manifest" "service_pod_identity_webhook" {
         "prometheus.io/scrape" = "true"
       }
       "name" = "pod-identity-webhook"
-      "namespace" = "default"
+      "namespace" = "${var.ns}"
     }
     "spec" = {
       "ports" = [
