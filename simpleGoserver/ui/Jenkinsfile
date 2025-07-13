@@ -31,7 +31,14 @@ podTemplate(containers: [
             container('nodejsbuild') {
                 stage('Build UI bundles') {
                     sh "cd simpleGoserver/ui && npm install && npm run build"
-                    sh "zip build.zip ./simpleGoserver/ui/build/"
+                }
+            }
+        }
+
+        stage('Tar Ball') {
+            container('jnlp') {
+                stage('Make a tar file') {
+                    sh "cd simpleGoserver/ui && tar -cvf build.tar.gz ./build/"
                 }
             }
         }
@@ -39,7 +46,7 @@ podTemplate(containers: [
         stage('Upload to S3') {
             container('awscli') {
                 stage('Upload to S3') {
-                    sh "aws s3 cp build.zip s3://${params.bucket}/postsapp/buildfiles/"
+                    sh "cd simpleGoserver/ui && aws s3 cp build.tar.gz s3://${params.bucket}/postsapp/buildfiles/"
                 }
             }
         }
