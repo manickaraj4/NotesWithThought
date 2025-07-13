@@ -13,7 +13,8 @@ podTemplate(containers: [
         image: 'amazon/aws-cli:latest', 
         command: 'sleep', 
         args: '30d')
-  ]) {
+  ], serviceAccount: "go-server-account"
+  ) {
     node(POD_LABEL) {
         parameters {
             string(defaultValue: 'samplebucketfortesting12345', description: 'Bucket to Store Buildfiles', name: 'bucket')
