@@ -27,6 +27,7 @@ podTemplate(
             container('jnlp') {
                 stage('git checkout') {
                     checkout scm
+                    sh "git config --global --add safe.directory '*'"
                 }
             }
         }
