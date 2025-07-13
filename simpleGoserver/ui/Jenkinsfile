@@ -10,7 +10,7 @@ podTemplate(containers: [
         args: '30d'),
     containerTemplate(
         name: 'awscli', 
-        image: 'mazon/aws-cli:latest', 
+        image: 'amazon/aws-cli:latest', 
         command: 'sleep', 
         args: '30d')
   ]) {
