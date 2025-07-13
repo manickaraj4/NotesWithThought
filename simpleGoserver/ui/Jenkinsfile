@@ -12,7 +12,7 @@ podTemplate(containers: [
         }
 
         stage('Build UI') {
-            // git 'https://github.com/manickaraj4/NotesWithThought'
+            git 'https://github.com/manickaraj4/NotesWithThought'
             container('nodejsbuild') {
                 stage('Build UI bundles') {
                     sh "cd simpleGoserver/ui && npm install && npm run build"
