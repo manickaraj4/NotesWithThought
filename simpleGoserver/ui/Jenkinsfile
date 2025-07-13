@@ -7,9 +7,13 @@ podTemplate(containers: [
         name: 'nodejsbuild', 
         image: 'node:18-alpine', 
         command: 'sleep', 
+        args: '30d'),
+    containerTemplate(
+        name: 'awscli', 
+        image: 'mazon/aws-cli:latest', 
+        command: 'sleep', 
         args: '30d')
   ]) {
-
     node(POD_LABEL) {
         parameters {
             string(defaultValue: 'samplebucketfortesting12345', description: 'Bucket to Store Buildfiles', name: 'bucket')
@@ -28,6 +32,13 @@ podTemplate(containers: [
                 stage('Build UI bundles') {
                     sh "cd simpleGoserver/ui && npm install && npm run build"
                     sh "zip build.zip ./simpleGoserver/ui/build/"
+                }
+            }
+        }
+
+        stage('Upload to S3') {
+            container('awscli') {
+                stage('Upload to S3') {
                     sh "aws s3 cp build.zip s3://${params.bucket}/postsapp/buildfiles/"
                 }
             }
