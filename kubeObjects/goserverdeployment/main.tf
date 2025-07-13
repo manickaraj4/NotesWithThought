@@ -11,6 +11,15 @@ data "aws_ssm_parameter" "db_host" {
   name = "kube_db_host"
 }
 
+resource "kubernetes_config_map" "startup_script" {
+  metadata {
+    name = "startup-script"
+  }
+
+  data = {
+    "startserver.sh" = "${file("${path.module}/scripts/startserver.sh")}"
+  }
+}
 
 /* data "aws_ssm_parameter" "github_oauth_id" {
   name = "GithubOAuthID"
@@ -85,22 +94,56 @@ resource "kubernetes_deployment" "go_server_deployment" {
         node_selector = {
           "kubernetes.io/arch" = "amd64"
         }
+        volume {
+          name = "script-load"
+          config_map {
+            name = "startup-script"
+          } 
+        }
+        volume {
+          name = "mnt-dir"
+          empty_dir {
+          }
+        }
         service_account_name = "go-server-account"
+
         container {
-          image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/apprepo:latest"
+          image = "amazon/aws-cli:latest"
+          name  = "init"
+          
+          volume_mount {
+            name = "script-load"
+            mount_path = "/webserver"
+          }
+          volume_mount {
+            name = "mnt-dir"
+            mount_path = "/mnt/"
+            read_only = false
+          }
+
+          env {
+            name = "S3_BUCKET" 
+            value = "${var.bucket}"
+          }
+
+          working_dir = "/mnt"
+
+          args = ["/webserver/startserver.sh"]
+          command = ["bash"]
+        }
+        container {
+          image = "golang:1.24"
+          #image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/apprepo:latest"
           name  = "goserver"
           port {
             container_port = 8080
           }
-
-/*           env {
-            name = "GITHUB_OAUTH2_CLIENT_ID" 
-            value = "${data.aws_ssm_parameter.github_oauth_id.value}"
+          
+          volume_mount {
+            name = "mnt-dir"
+            mount_path = "/mnt/"
+            read_only = false
           }
-          env {
-            name = "GITHUB_OAUTH2_CLIENT_SECRET" 
-            value = "${data.aws_ssm_parameter.github_oauth_secret.value}"
-          } */
           env {
             name = "DOMAIN" 
             value = "${var.domain}"
@@ -114,6 +157,10 @@ resource "kubernetes_deployment" "go_server_deployment" {
             name = "DB_HOST" 
             value = "${data.aws_ssm_parameter.db_host.value}"
           }
+          working_dir = "/mnt"
+
+          args = ["chmod +x /mnt/app && /mnt/app"]
+          command = ["bash","-c"]
 
           resources {
             limits = {
@@ -132,7 +179,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
               port = 8080
             }
 
-            initial_delay_seconds = 3
+            initial_delay_seconds = 5
             period_seconds        = 10
           }
         }

@@ -13,7 +13,6 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
@@ -150,7 +149,7 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request) {
 	dbposts, err := getdbPostsByUserId(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "500", "app": "posts-app"}).Inc()
+		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "500", "app": "posts-app"}).Inc()
 	}
 	var tempPost Post
 	ps := make([]Post, 0, len(dbposts))
@@ -159,7 +158,7 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request) {
 		tempPost.Body = dbposts[i].Body
 		ps = append(ps, tempPost)
 	}
-	exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
+	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(ps)
 }
@@ -170,13 +169,13 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		exposedMetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "500", "app": "posts-app"}).Inc()
+		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "500", "app": "posts-app"}).Inc()
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.Unmarshal(body, &p); err != nil {
-		exposedMetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "400", "app": "posts-app"}).Inc()
+		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "Error parsing request body", http.StatusBadRequest)
 		return
 	}
@@ -190,7 +189,7 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	exposedMetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "200", "app": "posts-app"}).Inc()
+	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(p)
 }
@@ -209,7 +208,7 @@ func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 	p.ID = int(dbpost.ID)
 	p.Body = dbpost.Body
 
-	exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
+	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(p)
 }
@@ -219,11 +218,11 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 	userId := sessionManager.GetString(r.Context(), "platform") + ":" + sessionManager.GetString(r.Context(), "id") + ":" + sessionManager.GetString(r.Context(), "login")
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
-		exposedMetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "500", "app": "posts-app"}).Inc()
+		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "500", "app": "posts-app"}).Inc()
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	if userId != dbpost.Userid {
-		exposedMetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "400", "app": "posts-app"}).Inc()
+		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "You dont have access to this Post", http.StatusForbidden)
 	}
 	res, err := deldbPost(id)
@@ -234,7 +233,7 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 	if !res {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	exposedMetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "200", "app": "posts-app"}).Inc()
+	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -257,7 +256,7 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 			}
 			log.Println(jsonres)
-			exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
+			// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonres)
 		default:
@@ -265,7 +264,7 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "400", "app": "posts-app"}).Inc()
+		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
 	}
 }

@@ -184,6 +184,7 @@ module "go_server_deployment" {
 
   domain     = var.domain
   aws_region = var.aws_region
+  bucket     = var.config_s3_bucket
 } 
 
 module "irsa_expose_deployment" {

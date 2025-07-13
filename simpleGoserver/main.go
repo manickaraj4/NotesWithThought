@@ -30,6 +30,6 @@ func main() {
 	googleInit()
 	githubInit()
 	webServerInit()
-	registerRequestMetrics()
+	//registerRequestMetrics()
 
 }
