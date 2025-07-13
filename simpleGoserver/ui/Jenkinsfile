@@ -11,8 +11,13 @@ podTemplate(containers: [
             string(defaultValue: 'samplebucketfortesting12345', description: 'Bucket to Store Buildfiles', name: 'bucket')
         }
 
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build UI') {
-            git 'https://github.com/manickaraj4/NotesWithThought.git'
             container('nodejsbuild') {
                 stage('Build UI bundles') {
                     sh "cd simpleGoserver/ui && npm install && npm run build"
