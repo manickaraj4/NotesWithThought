@@ -1,5 +1,9 @@
 podTemplate(containers: [
     containerTemplate(
+        name: 'jnlp', 
+        image: 'jenkins/inbound-agent:latest'
+        ),
+    containerTemplate(
         name: 'nodejsbuild', 
         image: 'node:18-alpine', 
         command: 'sleep', 
@@ -11,9 +15,13 @@ podTemplate(containers: [
             string(defaultValue: 'samplebucketfortesting12345', description: 'Bucket to Store Buildfiles', name: 'bucket')
         }
 
-        stage('Checkout') {
-            steps {
-                checkout scm
+        stage('Checkout Git') {
+            container('jnlp') {
+                stage('git checkout') {
+                    steps {
+                        checkout scm
+                    }
+                }
             }
         }
 
