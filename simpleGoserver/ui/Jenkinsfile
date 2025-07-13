@@ -11,7 +11,7 @@ podTemplate(containers: [
             string(defaultValue: 'samplebucketfortesting12345', description: 'Bucket to Store Buildfiles', name: 'bucket')
         }
 
-        stages {
+        stage {
             git 'https://github.com/spring-projects/spring-petclinic.git'
             container('nodejsbuild') {
                 stage('Build UI bundles') {
