@@ -10,11 +10,6 @@ podTemplate(
             command: 'sleep', 
             args: '30d'),
         containerTemplate(
-            name: 'gobuild', 
-            image: 'golang:1.24', 
-            command: 'sleep', 
-            args: '30d'),
-        containerTemplate(
             name: 'awscli', 
             image: 'amazon/aws-cli:latest', 
             command: 'sleep', 
@@ -52,19 +47,10 @@ podTemplate(
             }
         }
 
-        stage('Build Web Server') {
-            container('gobuild') {
-                stage('Build go server') {
-                    sh "cd simpleGoserver && go get github.com/coreos/go-oidc/v3/oidc golang.org/x/net/context golang.org/x/oauth2 github.com/alexedwards/scs/v2 github.com/go-sql-driver/mysql github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/service/ssm github.com/alexedwards/scs/mysqlstore github.com/prometheus/client_golang/prometheus && go build -v -o app"
-                }
-            }
-        }
-
         stage('Upload to S3') {
             container('awscli') {
                 stage('Upload to S3') {
                     sh "cd simpleGoserver/ui && aws s3 cp build.tar.gz s3://${params.bucket}/postsapp/buildfiles/"
-                    sh "cd simpleGoserver && aws s3 cp app s3://${params.bucket}/postsapp/buildfiles/"
                 }
             }
         }
