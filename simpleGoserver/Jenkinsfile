@@ -35,7 +35,7 @@ podTemplate(
         stage('Build Web Server') {
             container('gobuild') {
                 stage('Build go server') {
-                    sh "cd simpleGoserver && go get github.com/coreos/go-oidc/v3/oidc golang.org/x/net/context golang.org/x/oauth2 github.com/alexedwards/scs/v2 github.com/go-sql-driver/mysql github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/service/ssm github.com/alexedwards/scs/mysqlstore github.com/prometheus/client_golang/prometheus && go build -v -o app"
+                    sh "cd simpleGoserver && go get github.com/coreos/go-oidc/v3/oidc golang.org/x/net/context golang.org/x/oauth2 github.com/alexedwards/scs/v2 github.com/go-sql-driver/mysql github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/service/ssm github.com/alexedwards/scs/mysqlstore github.com/prometheus/client_golang/prometheus && go build -buildvcs=false -v -o app"
                 }
             }
         }
