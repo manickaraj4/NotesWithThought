@@ -3,8 +3,7 @@ variable "aws_region" {
   type    = string
 }
 
-variable "config_s3_bucket" {
-  default = "samplebucketfortesting12345"
+variable "bucket" {
   type    = string
 }
 

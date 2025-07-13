@@ -1,0 +1,47 @@
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+type metrics struct {
+	requestCount *prometheus.CounterVec
+}
+
+var (
+	reg           *prometheus.Registry
+	exposedMetric *metrics
+)
+
+func newMetrics(reg prometheus.Registerer) *metrics {
+	m := &metrics{
+		requestCount: prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Name: "requests_total",
+				Help: "Track number of requests",
+			},
+			[]string{"requests"},
+		),
+	}
+	reg.MustRegister(m.requestCount)
+	return m
+}
+
+func registerRequestMetrics() {
+	// Create a non-global registry.
+	reg = prometheus.NewRegistry()
+
+	exposedMetric = newMetrics(reg)
+
+	// Set values for the new created metrics.
+	// m.hdFailures.With(prometheus.Labels{"device": "/dev/sda"}).Inc()
+
+	// Expose metrics and custom registry via an HTTP server
+	// using the HandleFor function. "/metrics" is the usual endpoint for that.
+	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}

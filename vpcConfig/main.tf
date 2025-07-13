@@ -120,6 +120,7 @@ module "irsa_roles" {
   for_each   = var.serviceaccount_map
   source     = "./irsaroles"
 
+  bucket         = var.config_s3_bucket
   aws_region     = var.aws_region
   namespace      = each.value.namespace
   serviceaccount = each.value.serviceaccount

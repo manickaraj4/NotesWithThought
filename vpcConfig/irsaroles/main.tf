@@ -9,6 +9,6 @@ resource "aws_iam_role" "oidc_role" {
 resource "aws_iam_role_policy" "oidc_policy_attachments" {
   role = aws_iam_role.oidc_role.id
 
-  policy = templatefile("${path.module}/policies/${var.policyfilename}",{ region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}"})
+  policy = templatefile("${path.module}/policies/${var.policyfilename}",{ bucket = "${var.bucket}", region = "${var.aws_region}", account_id = "${data.aws_caller_identity.current.account_id}"})
 }
 
