@@ -13,6 +13,7 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
@@ -88,6 +89,8 @@ func webServerInit() {
 	mux.HandleFunc("/healthcheck", healthcheckHandler)
 
 	mux.Handle("/", http.FileServer(fsys))
+
+	registerRequestMetrics()
 
 	fmt.Println("Server is running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(mux)))
@@ -260,11 +263,12 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonres)
 		default:
+			exposedMetric.requestCount.With(prometheus.Labels{"request_method": r.Method, "response_status_code": "400", "app": "posts-app"}).Inc()
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 
 	} else {
-		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "400", "app": "posts-app"}).Inc()
+		// exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
 	}
 }
