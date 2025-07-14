@@ -1,13 +1,13 @@
 resource "kubernetes_manifest" "serviceaccount_kube_system_cluster_autoscaler" {
   manifest = {
     "apiVersion" = "v1"
-    "kind" = "ServiceAccount"
+    "kind"       = "ServiceAccount"
     "metadata" = {
       "labels" = {
         "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-        "k8s-app" = "cluster-autoscaler"
+        "k8s-app"   = "cluster-autoscaler"
       }
-      "name" = "cluster-autoscaler"
+      "name"      = "cluster-autoscaler"
       "namespace" = "kube-system"
       "annotations" = {
         "kubernetes/role-arn" = "${var.service_account_arn}"
@@ -19,11 +19,11 @@ resource "kubernetes_manifest" "serviceaccount_kube_system_cluster_autoscaler" {
 resource "kubernetes_manifest" "clusterrole_cluster_autoscaler" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "ClusterRole"
+    "kind"       = "ClusterRole"
     "metadata" = {
       "labels" = {
         "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-        "k8s-app" = "cluster-autoscaler"
+        "k8s-app"   = "cluster-autoscaler"
       }
       "name" = "cluster-autoscaler"
     }
@@ -216,13 +216,13 @@ resource "kubernetes_manifest" "clusterrole_cluster_autoscaler" {
 resource "kubernetes_manifest" "role_kube_system_cluster_autoscaler" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "Role"
+    "kind"       = "Role"
     "metadata" = {
       "labels" = {
         "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-        "k8s-app" = "cluster-autoscaler"
+        "k8s-app"   = "cluster-autoscaler"
       }
-      "name" = "cluster-autoscaler"
+      "name"      = "cluster-autoscaler"
       "namespace" = "kube-system"
     }
     "rules" = [
@@ -264,23 +264,23 @@ resource "kubernetes_manifest" "role_kube_system_cluster_autoscaler" {
 resource "kubernetes_manifest" "clusterrolebinding_cluster_autoscaler" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "ClusterRoleBinding"
+    "kind"       = "ClusterRoleBinding"
     "metadata" = {
       "labels" = {
         "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-        "k8s-app" = "cluster-autoscaler"
+        "k8s-app"   = "cluster-autoscaler"
       }
       "name" = "cluster-autoscaler"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
-      "kind" = "ClusterRole"
-      "name" = "cluster-autoscaler"
+      "kind"     = "ClusterRole"
+      "name"     = "cluster-autoscaler"
     }
     "subjects" = [
       {
-        "kind" = "ServiceAccount"
-        "name" = "cluster-autoscaler"
+        "kind"      = "ServiceAccount"
+        "name"      = "cluster-autoscaler"
         "namespace" = "kube-system"
       },
     ]
@@ -290,24 +290,24 @@ resource "kubernetes_manifest" "clusterrolebinding_cluster_autoscaler" {
 resource "kubernetes_manifest" "rolebinding_kube_system_cluster_autoscaler" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "RoleBinding"
+    "kind"       = "RoleBinding"
     "metadata" = {
       "labels" = {
         "k8s-addon" = "cluster-autoscaler.addons.k8s.io"
-        "k8s-app" = "cluster-autoscaler"
+        "k8s-app"   = "cluster-autoscaler"
       }
-      "name" = "cluster-autoscaler"
+      "name"      = "cluster-autoscaler"
       "namespace" = "kube-system"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
-      "kind" = "Role"
-      "name" = "cluster-autoscaler"
+      "kind"     = "Role"
+      "name"     = "cluster-autoscaler"
     }
     "subjects" = [
       {
-        "kind" = "ServiceAccount"
-        "name" = "cluster-autoscaler"
+        "kind"      = "ServiceAccount"
+        "name"      = "cluster-autoscaler"
         "namespace" = "kube-system"
       },
     ]
@@ -317,12 +317,12 @@ resource "kubernetes_manifest" "rolebinding_kube_system_cluster_autoscaler" {
 resource "kubernetes_manifest" "deployment_kube_system_cluster_autoscaler" {
   manifest = {
     "apiVersion" = "apps/v1"
-    "kind" = "Deployment"
+    "kind"       = "Deployment"
     "metadata" = {
       "labels" = {
         "app" = "cluster-autoscaler"
       }
-      "name" = "cluster-autoscaler"
+      "name"      = "cluster-autoscaler"
       "namespace" = "kube-system"
     }
     "spec" = {
@@ -335,7 +335,7 @@ resource "kubernetes_manifest" "deployment_kube_system_cluster_autoscaler" {
       "template" = {
         "metadata" = {
           "annotations" = {
-            "prometheus.io/port" = "8085"
+            "prometheus.io/port"   = "8085"
             "prometheus.io/scrape" = "true"
           }
           "labels" = {
@@ -344,7 +344,7 @@ resource "kubernetes_manifest" "deployment_kube_system_cluster_autoscaler" {
         }
         "spec" = {
           "nodeSelector" = {
-             "kubernetes.io/arch" = "arm64"
+            "kubernetes.io/arch" = "arm64"
           }
           "containers" = [
             {
@@ -356,16 +356,16 @@ resource "kubernetes_manifest" "deployment_kube_system_cluster_autoscaler" {
                 "--skip-nodes-with-local-storage=false",
                 "--nodes=1:4:worker_asg",
               ]
-              "image" = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.1"
+              "image"           = "registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.1"
               "imagePullPolicy" = "Always"
-              "name" = "cluster-autoscaler"
+              "name"            = "cluster-autoscaler"
               "resources" = {
                 "limits" = {
-                  "cpu" = "100m"
+                  "cpu"    = "100m"
                   "memory" = "600Mi"
                 }
                 "requests" = {
-                  "cpu" = "100m"
+                  "cpu"    = "100m"
                   "memory" = "600Mi"
                 }
               }
@@ -381,17 +381,17 @@ resource "kubernetes_manifest" "deployment_kube_system_cluster_autoscaler" {
               "volumeMounts" = [
                 {
                   "mountPath" = "/etc/ssl/certs/ca-certificates.crt"
-                  "name" = "ssl-certs"
-                  "readOnly" = true
+                  "name"      = "ssl-certs"
+                  "readOnly"  = true
                 },
               ]
             },
           ]
           "priorityClassName" = "system-cluster-critical"
           "securityContext" = {
-            "fsGroup" = 65534
+            "fsGroup"      = 65534
             "runAsNonRoot" = true
-            "runAsUser" = 65534
+            "runAsUser"    = 65534
             "seccompProfile" = {
               "type" = "RuntimeDefault"
             }

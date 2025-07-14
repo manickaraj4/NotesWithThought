@@ -4,7 +4,7 @@ variable "aws_region" {
 }
 
 variable "bucket" {
-  type    = string
+  type = string
 }
 
 variable "domain" {

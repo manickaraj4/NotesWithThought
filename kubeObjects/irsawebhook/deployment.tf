@@ -1,9 +1,9 @@
 resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "apps/v1"
-    "kind" = "Deployment"
+    "kind"       = "Deployment"
     "metadata" = {
-      "name" = "pod-identity-webhook"
+      "name"      = "pod-identity-webhook"
       "namespace" = "${var.ns}"
     }
     "spec" = {
@@ -21,7 +21,7 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
         }
         "spec" = {
           "nodeSelector" = {
-             "kubernetes.io/arch" = "arm64"
+            "kubernetes.io/arch" = "arm64"
           }
           "containers" = [
             {
@@ -35,14 +35,14 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
                 "--sts-regional-endpoint=true",
                 "--logtostderr",
               ]
-              "image" = "amazon/amazon-eks-pod-identity-webhook:latest"
+              "image"           = "amazon/amazon-eks-pod-identity-webhook:latest"
               "imagePullPolicy" = "Always"
-              "name" = "pod-identity-webhook"
+              "name"            = "pod-identity-webhook"
               "volumeMounts" = [
                 {
                   "mountPath" = "/etc/webhook/certs"
-                  "name" = "cert"
-                  "readOnly" = true
+                  "name"      = "cert"
+                  "readOnly"  = true
                 },
               ]
             },
@@ -65,7 +65,7 @@ resource "kubernetes_manifest" "deployment_pod_identity_webhook" {
 resource "kubernetes_manifest" "clusterissuer_selfsigned" {
   manifest = {
     "apiVersion" = "cert-manager.io/v1"
-    "kind" = "ClusterIssuer"
+    "kind"       = "ClusterIssuer"
     "metadata" = {
       "name" = "selfsigned-${var.ns}"
     }
@@ -78,9 +78,9 @@ resource "kubernetes_manifest" "clusterissuer_selfsigned" {
 resource "kubernetes_manifest" "certificate_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "cert-manager.io/v1"
-    "kind" = "Certificate"
+    "kind"       = "Certificate"
     "metadata" = {
-      "name" = "pod-identity-webhook"
+      "name"      = "pod-identity-webhook"
       "namespace" = "${var.ns}"
     }
     "spec" = {
@@ -92,13 +92,13 @@ resource "kubernetes_manifest" "certificate_pod_identity_webhook" {
         "pod-identity-webhook.${var.ns}.svc.local",
       ]
       "duration" = "2160h"
-      "isCA" = true
+      "isCA"     = true
       "issuerRef" = {
         "kind" = "ClusterIssuer"
         "name" = "selfsigned"
       }
       "renewBefore" = "360h"
-      "secretName" = "pod-identity-webhook-cert"
+      "secretName"  = "pod-identity-webhook-cert"
     }
   }
 }

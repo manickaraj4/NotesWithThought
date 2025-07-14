@@ -1,9 +1,9 @@
 resource "kubernetes_manifest" "serviceaccount_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "v1"
-    "kind" = "ServiceAccount"
+    "kind"       = "ServiceAccount"
     "metadata" = {
-      "name" = "pod-identity-webhook-${var.ns}"
+      "name"      = "pod-identity-webhook-${var.ns}"
       "namespace" = "${var.ns}"
     }
   }
@@ -12,9 +12,9 @@ resource "kubernetes_manifest" "serviceaccount_pod_identity_webhook" {
 resource "kubernetes_manifest" "role_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "Role"
+    "kind"       = "Role"
     "metadata" = {
-      "name" = "pod-identity-webhook"
+      "name"      = "pod-identity-webhook"
       "namespace" = "${var.ns}"
     }
     "rules" = [
@@ -52,20 +52,20 @@ resource "kubernetes_manifest" "role_pod_identity_webhook" {
 resource "kubernetes_manifest" "rolebinding_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "RoleBinding"
+    "kind"       = "RoleBinding"
     "metadata" = {
-      "name" = "pod-identity-webhook"
+      "name"      = "pod-identity-webhook"
       "namespace" = "${var.ns}"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
-      "kind" = "Role"
-      "name" = "pod-identity-webhook"
+      "kind"     = "Role"
+      "name"     = "pod-identity-webhook"
     }
     "subjects" = [
       {
-        "kind" = "ServiceAccount"
-        "name" = "pod-identity-webhook-${var.ns}"
+        "kind"      = "ServiceAccount"
+        "name"      = "pod-identity-webhook-${var.ns}"
         "namespace" = "${var.ns}"
       },
     ]
@@ -75,7 +75,7 @@ resource "kubernetes_manifest" "rolebinding_pod_identity_webhook" {
 resource "kubernetes_manifest" "clusterrole_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "ClusterRole"
+    "kind"       = "ClusterRole"
     "metadata" = {
       "name" = "pod-identity-webhook-${var.ns}"
     }
@@ -114,19 +114,19 @@ resource "kubernetes_manifest" "clusterrole_pod_identity_webhook" {
 resource "kubernetes_manifest" "clusterrolebinding_pod_identity_webhook" {
   manifest = {
     "apiVersion" = "rbac.authorization.k8s.io/v1"
-    "kind" = "ClusterRoleBinding"
+    "kind"       = "ClusterRoleBinding"
     "metadata" = {
       "name" = "pod-identity-webhook-${var.ns}"
     }
     "roleRef" = {
       "apiGroup" = "rbac.authorization.k8s.io"
-      "kind" = "ClusterRole"
-      "name" = "pod-identity-webhook-${var.ns}"
+      "kind"     = "ClusterRole"
+      "name"     = "pod-identity-webhook-${var.ns}"
     }
     "subjects" = [
       {
-        "kind" = "ServiceAccount"
-        "name" = "pod-identity-webhook-${var.ns}"
+        "kind"      = "ServiceAccount"
+        "name"      = "pod-identity-webhook-${var.ns}"
         "namespace" = "${var.ns}"
       },
     ]

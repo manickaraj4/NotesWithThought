@@ -24,7 +24,7 @@ data "aws_ssm_parameter" "prometheus_password" {
 }
 
 data "aws_ssm_parameter" "prometheus_database" {
-  name            = "kube_db_host"
+  name = "kube_db_host"
 }
 
 /* resource "kubernetes_secret" "prometheus_secret" {
@@ -43,7 +43,7 @@ resource "kubernetes_secret" "grafana_secret" {
   }
 
   data = {
-    admin-user = "admin"
+    admin-user     = "admin"
     admin-password = data.aws_ssm_parameter.prometheus_password.value
   }
 }
@@ -185,14 +185,14 @@ module "go_server_deployment" {
   domain     = var.domain
   aws_region = var.aws_region
   bucket     = var.config_s3_bucket
-} 
+}
 
 module "irsa_expose_deployment" {
   depends_on = [helm_release.flannel_cni]
   source     = "./irsaexpose"
 
-  domain     = var.domain
-} 
+  domain = var.domain
+}
 
 /* module "cluster-autoscaler" {
   depends_on = [helm_release.flannel_cni]
@@ -272,7 +272,7 @@ resource "helm_release" "prometheus_server" {
       name  = "kube-state-metrics.volumeMounts[0].name"
       value = "config-vol"
     }
-  
+
   ]
 }
 
@@ -344,7 +344,7 @@ resource "helm_release" "grafana_server" {
       name  = "admin.existingSecret"
       value = "grafana-secret"
     },
-      {
+    {
       name  = "ingress.enabled"
       value = true
     },
@@ -422,7 +422,7 @@ resource "helm_release" "aws_ebs_csi_driver" {
       value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/kube-system_ebs-csi-node-sa"
     }
   ]
-  
+
 
   /*   values = [
     yamlencode(yamldecode(templatefile("${path.module}/awsloadbalancercontroller/charts/values.yaml", { region = "${var.aws_region}", repo = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/ecr-public/eks/aws-load-balancer-controller", tag = "v2.13.3", imagepullsecrets = "docker-cfg-current-account" })))

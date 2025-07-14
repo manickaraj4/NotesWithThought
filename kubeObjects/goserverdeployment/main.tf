@@ -83,11 +83,16 @@ resource "kubernetes_deployment" "go_server_deployment" {
         labels = {
           test = "GoServerApp"
         }
+        annotations = {
+          "prometheus.io/scrape" = "true"
+          "prometheus.io/path"   = "/metrics"
+          "prometheus.io/port"   = "8081"
+        }
       }
 
       spec {
 
-/*         image_pull_secrets {
+        /*         image_pull_secrets {
           name = "docker-cfg-default"
         } */
 
@@ -98,7 +103,7 @@ resource "kubernetes_deployment" "go_server_deployment" {
           name = "script-load"
           config_map {
             name = "startup-script"
-          } 
+          }
         }
         volume {
           name = "mnt-dir"
@@ -110,57 +115,57 @@ resource "kubernetes_deployment" "go_server_deployment" {
         container {
           image = "amazon/aws-cli:latest"
           name  = "init"
-          
+
           volume_mount {
-            name = "script-load"
+            name       = "script-load"
             mount_path = "/webserver"
           }
           volume_mount {
-            name = "mnt-dir"
+            name       = "mnt-dir"
             mount_path = "/mnt/"
-            read_only = false
+            read_only  = false
           }
 
           env {
-            name = "S3_BUCKET" 
-            value = "${var.bucket}"
+            name  = "S3_BUCKET"
+            value = var.bucket
           }
 
           working_dir = "/mnt"
 
-          args = ["/webserver/startserver.sh"]
+          args    = ["/webserver/startserver.sh"]
           command = ["bash"]
         }
         container {
           image = "golang:1.24"
           #image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/apprepo:latest"
-          name  = "goserver"
+          name = "goserver"
           port {
             container_port = 8080
           }
-          
+
           volume_mount {
-            name = "mnt-dir"
+            name       = "mnt-dir"
             mount_path = "/mnt/"
-            read_only = false
+            read_only  = false
           }
           env {
-            name = "DOMAIN" 
-            value = "${var.domain}"
+            name  = "DOMAIN"
+            value = var.domain
           }
           env {
-            name = "AWS_REGION" 
-            value = "${var.aws_region}"
+            name  = "AWS_REGION"
+            value = var.aws_region
           }
 
           env {
-            name = "DB_HOST" 
-            value = "${data.aws_ssm_parameter.db_host.value}"
+            name  = "DB_HOST"
+            value = data.aws_ssm_parameter.db_host.value
           }
           working_dir = "/mnt"
 
-          args = ["chmod +x /mnt/app && /mnt/app"]
-          command = ["bash","-c"]
+          args    = ["chmod +x /mnt/app && /mnt/app"]
+          command = ["bash", "-c"]
 
           resources {
             limits = {

@@ -259,8 +259,8 @@ resource "aws_launch_template" "worker_node_template" {
 }
 
 resource "aws_autoscaling_group" "worker_asg" {
-  depends_on          = [time_sleep.wait_300_seconds]
-  name                = "worker_asg"
+  depends_on = [time_sleep.wait_300_seconds]
+  name       = "worker_asg"
   # availability_zones  = ["${var.aws_region}a", "${var.aws_region}b", "${var.aws_region}c"]
   vpc_zone_identifier = [var.subnet_1a]
   desired_capacity    = 1

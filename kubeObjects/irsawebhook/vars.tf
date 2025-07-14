@@ -1,3 +1,3 @@
-variable ns {
-    type = string
+variable "ns" {
+  type = string
 }

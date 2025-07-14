@@ -38,12 +38,12 @@ resource "kubernetes_deployment" "irsa_expose_deployment" {
         node_selector = {
           "kubernetes.io/arch" = "arm64"
         }
-        
+
         volume {
           name = "script-load"
           config_map {
             name = "irsa-expose-script"
-          } 
+          }
         }
         volume {
           name = "web-dir"
@@ -60,27 +60,27 @@ resource "kubernetes_deployment" "irsa_expose_deployment" {
           }
 
           volume_mount {
-            name = "script-load"
+            name       = "script-load"
             mount_path = "/mnt"
           }
 
           volume_mount {
-            name = "web-dir"
+            name       = "web-dir"
             mount_path = "/web/www/"
-            read_only = false
+            read_only  = false
           }
 
           working_dir = "/web/www/"
 
-          args = ["/mnt/irsaexpose.py"]
+          args    = ["/mnt/irsaexpose.py"]
           command = ["python3"]
 
           env {
-            name = "DOMAIN" 
+            name  = "DOMAIN"
             value = "kubeadmin.${var.domain}"
           }
           env {
-            name = "KUBERNETES_ENDPOINT" 
+            name  = "KUBERNETES_ENDPOINT"
             value = "kubernetes.default.svc.cluster.local"
           }
 

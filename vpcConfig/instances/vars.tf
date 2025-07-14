@@ -1,5 +1,5 @@
 variable "ssh_key_pub" {
-  type    = string
+  type = string
 }
 
 variable "arm64_ami" {
