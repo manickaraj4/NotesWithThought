@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -43,4 +44,8 @@ func registerRequestMetrics() {
 	// using the HandleFor function. "/metrics" is the usual endpoint for that.
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	go http.ListenAndServe(":8081", nil)
+}
+
+func updateMetric(requestMethod string, responseStatusCode int) {
+	exposedMetric.requestCount.With(prometheus.Labels{"request_method": requestMethod, "response_status_code": strconv.Itoa(responseStatusCode), "app": "posts-app"}).Inc()
 }

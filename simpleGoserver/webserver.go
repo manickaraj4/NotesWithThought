@@ -13,7 +13,6 @@ import (
 
 	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
@@ -100,6 +99,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionManager.Destroy(r.Context())
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	updateMetric(r.Method, http.StatusTemporaryRedirect)
 
 }
 
@@ -121,9 +121,11 @@ func postsHandler(w http.ResponseWriter, r *http.Request) {
 			handlePostPosts(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			updateMetric(r.Method, http.StatusMethodNotAllowed)
 		}
 	} else {
 		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
+		updateMetric(r.Method, http.StatusUnauthorized)
 	}
 }
 
@@ -132,6 +134,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.URL.Path[len("/posts/"):])
 		if err != nil {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			updateMetric(r.Method, http.StatusBadRequest)
 			return
 		}
 		switch r.Method {
@@ -141,9 +144,11 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 			handleDeletePost(w, r, id)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			updateMetric(r.Method, http.StatusMethodNotAllowed)
 		}
 	} else {
 		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
+		updateMetric(r.Method, http.StatusUnauthorized)
 	}
 }
 
@@ -164,6 +169,7 @@ func handleGetPosts(w http.ResponseWriter, r *http.Request) {
 	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(ps)
+	updateMetric(r.Method, http.StatusOK)
 }
 
 func handlePostPosts(w http.ResponseWriter, r *http.Request) {
@@ -174,12 +180,14 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "500", "app": "posts-app"}).Inc()
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		updateMetric(r.Method, http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.Unmarshal(body, &p); err != nil {
 		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "Error parsing request body", http.StatusBadRequest)
+		updateMetric(r.Method, http.StatusBadRequest)
 		return
 	}
 
@@ -189,12 +197,14 @@ func handlePostPosts(w http.ResponseWriter, r *http.Request) {
 
 	if dberr != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		updateMetric(r.Method, http.StatusInternalServerError)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(p)
+	updateMetric(r.Method, http.StatusOK)
 }
 
 func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
@@ -203,10 +213,12 @@ func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 	dbpost, err := getdbPostsBypostId(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		updateMetric(r.Method, http.StatusInternalServerError)
 	}
 
 	if userId != dbpost.Userid {
 		http.Error(w, "You dont have access to this Post", http.StatusForbidden)
+		updateMetric(r.Method, http.StatusForbidden)
 	}
 	p.ID = int(dbpost.ID)
 	p.Body = dbpost.Body
@@ -214,6 +226,7 @@ func handleGetPost(w http.ResponseWriter, r *http.Request, id int) {
 	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(p)
+	updateMetric(r.Method, http.StatusOK)
 }
 
 func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
@@ -223,21 +236,26 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request, id int) {
 	if err != nil {
 		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "500", "app": "posts-app"}).Inc()
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		updateMetric(r.Method, http.StatusInternalServerError)
 	}
 	if userId != dbpost.Userid {
 		// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "You dont have access to this Post", http.StatusForbidden)
+		updateMetric(r.Method, http.StatusForbidden)
 	}
 	res, err := deldbPost(id)
 	if err != nil {
 
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		updateMetric(r.Method, http.StatusInternalServerError)
 	}
 	if !res {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		updateMetric(r.Method, http.StatusInternalServerError)
 	}
 	// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "POST", "response_status_code": "200", "app": "posts-app"}).Inc()
 	w.WriteHeader(http.StatusOK)
+	updateMetric(r.Method, http.StatusOK)
 }
 
 func userInfoHandler(w http.ResponseWriter, r *http.Request) {
@@ -257,18 +275,21 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				log.Println(err)
 				http.Error(w, err.Error(), http.StatusUnauthorized)
+				updateMetric(r.Method, http.StatusUnauthorized)
 			}
 			log.Println(jsonres)
 			// exposedmetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "200", "app": "posts-app"}).Inc()
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonres)
+			updateMetric(r.Method, http.StatusOK)
 		default:
-			exposedMetric.requestCount.With(prometheus.Labels{"request_method": r.Method, "response_status_code": "400", "app": "posts-app"}).Inc()
+			updateMetric(r.Method, http.StatusMethodNotAllowed)
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 
 	} else {
 		// exposedMetric.requestCount.With(prometheus.Labels{"request_method": "GET", "response_status_code": "400", "app": "posts-app"}).Inc()
 		http.Error(w, "UnAuthorized", http.StatusUnauthorized)
+		updateMetric(r.Method, http.StatusUnauthorized)
 	}
 }

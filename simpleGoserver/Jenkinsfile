@@ -51,8 +51,9 @@ podTemplate(
         }
 
         stage('Restart Deployment') {
-            container('jnlp') {
+            container('awscli') {
                 stage('RestartDeployment') {
+                    sh "yum install jq -y"
                     script {
                         final String currentTime = sh(returnStdout: true, script: 'date +%Y-%m-%dT%H:%M:%SZ').trim()
                         final String kubeToken = sh(returnStdout: true, script: "aws ssm get-parameter --name kube_static_token --with-decryption --region ${params.AwsRegion} | jq -r '.Parameter.Value'").trim()

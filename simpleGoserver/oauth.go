@@ -113,15 +113,18 @@ func githubLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if sessionManager.GetString(r.Context(), "id") != "" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		updateMetric(r.Method, http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
+			updateMetric(r.Method, http.StatusInternalServerError)
 			return
 		}
 		nonce, err := randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
+			updateMetric(r.Method, http.StatusInternalServerError)
 			return
 		}
 
@@ -130,6 +133,7 @@ func githubLoginHandler(w http.ResponseWriter, r *http.Request) {
 		sessionManager.Put(r.Context(), "platform", "github")
 
 		http.Redirect(w, r, githubAuthConfig.AuthCodeURL(state), http.StatusFound)
+		updateMetric(r.Method, http.StatusFound)
 	}
 }
 
@@ -137,15 +141,18 @@ func googleLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if sessionManager.GetString(r.Context(), "id") != "" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		updateMetric(r.Method, http.StatusTemporaryRedirect)
 	} else {
 		state, err := randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
+			updateMetric(r.Method, http.StatusInternalServerError)
 			return
 		}
 		nonce, err := randString(16)
 		if err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
+			updateMetric(r.Method, http.StatusInternalServerError)
 			return
 		}
 
@@ -154,25 +161,30 @@ func googleLoginHandler(w http.ResponseWriter, r *http.Request) {
 		sessionManager.Put(r.Context(), "platform", "google")
 
 		http.Redirect(w, r, googleAuthConfig.AuthCodeURL(state), http.StatusFound)
+		updateMetric(r.Method, http.StatusFound)
 	}
 }
 
 func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 	if sessionManager.GetString(r.Context(), "platform") != "google" {
 		http.Error(w, "This path is reserved for Google Oauth", http.StatusForbidden)
+		updateMetric(r.Method, http.StatusForbidden)
 	} else {
 		if sessionManager.GetString(r.Context(), "id") != "" {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			updateMetric(r.Method, http.StatusTemporaryRedirect)
 		} else {
 			state := sessionManager.GetString(r.Context(), "state")
 			if r.URL.Query().Get("state") != state {
 				http.Error(w, "state did not match", http.StatusBadRequest)
+				updateMetric(r.Method, http.StatusBadRequest)
 				return
 			}
 			oauth2Token, err := googleAuthConfig.Exchange(ctx, r.URL.Query().Get("code"))
 
 			if err != nil {
 				http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
+				updateMetric(r.Method, http.StatusInternalServerError)
 				return
 			}
 			log.Println("Reading Google OauthToken")
@@ -183,6 +195,7 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 			userInfo, err := googleProvider.UserInfo(ctx, oauth2.StaticTokenSource(oauth2Token))
 			if err != nil {
 				http.Error(w, "Failed to get userinfo: "+err.Error(), http.StatusInternalServerError)
+				updateMetric(r.Method, http.StatusInternalServerError)
 				return
 			}
 
@@ -206,6 +219,7 @@ func googleOauthHandler(w http.ResponseWriter, r *http.Request) {
 
 			sessionManager.WriteSessionCookie(r.Context(), w, token, expiry)
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			updateMetric(r.Method, http.StatusTemporaryRedirect)
 		}
 	}
 }
@@ -214,14 +228,17 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 
 	if sessionManager.GetString(r.Context(), "platform") != "github" {
 		http.Error(w, "This path is reserved for Github Oauth", http.StatusForbidden)
+		updateMetric(r.Method, http.StatusForbidden)
 	} else {
 		if sessionManager.GetString(r.Context(), "id") != "" {
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+			updateMetric(r.Method, http.StatusTemporaryRedirect)
 		} else {
 			state := sessionManager.GetString(r.Context(), "state")
 
 			if r.URL.Query().Get("state") != state {
 				http.Error(w, "state did not match", http.StatusBadRequest)
+				updateMetric(r.Method, http.StatusBadRequest)
 				return
 			}
 
@@ -229,6 +246,7 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
+				updateMetric(r.Method, http.StatusInternalServerError)
 				return
 			}
 
@@ -242,6 +260,7 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 			userDetails, err := githubGetUserDetails(oauth2Token.AccessToken)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
+				updateMetric(r.Method, http.StatusUnauthorized)
 			}
 
 			res2C, _ := json.Marshal(userDetails)
@@ -254,12 +273,13 @@ func githubOauthHandler(w http.ResponseWriter, r *http.Request) {
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
+				updateMetric(r.Method, http.StatusUnauthorized)
 			}
 
 			sessionManager.WriteSessionCookie(r.Context(), w, token, expiry)
 
 			http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-
+			updateMetric(r.Method, http.StatusTemporaryRedirect)
 		}
 	}
 
