@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,5 +42,5 @@ func registerRequestMetrics() {
 	// Expose metrics and custom registry via an HTTP server
 	// using the HandleFor function. "/metrics" is the usual endpoint for that.
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	go http.ListenAndServe(":8081", nil)
 }
