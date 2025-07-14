@@ -23,7 +23,7 @@ func newMetrics(reg prometheus.Registerer) *metrics {
 				Name: "requests_total",
 				Help: "Track number of requests",
 			},
-			[]string{"requests"},
+			[]string{"request_method", "response_status_code", "app"},
 		),
 	}
 	reg.MustRegister(m.requestCount)
