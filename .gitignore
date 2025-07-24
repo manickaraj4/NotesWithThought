@@ -2,3 +2,5 @@ vpcConfig/.terraform/
 kubeObjects/.terraform/
 
 .terraform.lock.hcl
+
+
