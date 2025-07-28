@@ -60,6 +60,55 @@ resource "kubernetes_service_account" "go_server_sa" {
   }
 }
 
+resource "kubernetes_horizontal_pod_autoscaler_v2" "go_server_hpa" {
+  metadata {
+    name = "go-server-hpa"
+  }
+
+  spec {
+    min_replicas = 1
+    max_replicas = 5
+
+    scale_target_ref {
+      kind = "Deployment"
+      name = "posts-app"
+      api_version = "apps/v1"
+    }
+
+    behavior {
+      scale_down {
+        stabilization_window_seconds = 300
+        select_policy                = "Min"
+        policy {
+          period_seconds = 120
+          type           = "Pods"
+          value          = 1
+        }
+
+        policy {
+          period_seconds = 310
+          type           = "Percent"
+          value          = 100
+        }
+      }
+      scale_up {
+        stabilization_window_seconds = 600
+        select_policy                = "Max"
+        policy {
+          period_seconds = 180
+          type           = "Percent"
+          value          = 100
+        }
+        policy {
+          period_seconds = 600
+          type           = "Pods"
+          value          = 5
+        }
+      }
+    }
+  }
+}
+
 
 resource "kubernetes_deployment" "go_server_deployment" {
   metadata {
@@ -91,10 +140,6 @@ resource "kubernetes_deployment" "go_server_deployment" {
       }
 
       spec {
-
-        /*         image_pull_secrets {
-          name = "docker-cfg-default"
-        } */
 
         node_selector = {
           "kubernetes.io/arch" = "amd64"
@@ -196,26 +241,17 @@ resource "kubernetes_deployment" "go_server_deployment" {
 resource "kubernetes_service" "post_service" {
   metadata {
     name = "posts-app"
-    /* annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-ssl-ports" : "https"
-      "service.beta.kubernetes.io/aws-load-balancer-ssl-cert" : "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
-      "service.beta.kubernetes.io/aws-load-balancer-type" : "nlb"
-      "service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout" : "60"
-      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "instance"
-    } */
   }
   spec {
     selector = {
       test = "GoServerApp"
     }
-    #session_affinity = "ClientIP"
     port {
       port        = 80
       target_port = 8080
       protocol    = "TCP"
     }
 
-    #load_balancer_class = "service.k8s.aws/nlb"
     type = "ClusterIP"
   }
 }
@@ -223,27 +259,10 @@ resource "kubernetes_service" "post_service" {
 resource "kubernetes_ingress_v1" "post_service_ingress" {
   metadata {
     name = "postservice-ingress"
-    /*     annotations = {
-      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type"      = "instance"
-      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 80}]"
-      "alb.ingress.kubernetes.io/certificate-arn"  = "arn:aws:acm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:certificate/${data.aws_ssm_parameter.lb_cert_id.value}"
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/posts"
-      "alb.ingress.kubernetes.io/healthcheck-port" = "8080"
-      "alb.ingress.kubernetes.io/success-codes"    = "200-404" 
-    } */
   }
 
   spec {
     ingress_class_name = "nginx"
-    /*     default_backend {
-      service {
-        name = "posts-app"
-        port {
-          number = 80
-        }
-      }
-    }  */
 
     rule {
       host = "posts.${var.domain}"

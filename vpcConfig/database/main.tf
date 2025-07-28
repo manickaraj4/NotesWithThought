@@ -14,7 +14,7 @@ resource "random_password" "db_password" {
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-resource "aws_ssm_parameter" "db_secret" {
+/* resource "aws_ssm_parameter" "db_secret" {
   name        = "kube_db_secret"
   description = "Master DB password"
   type        = "SecureString"
@@ -23,7 +23,7 @@ resource "aws_ssm_parameter" "db_secret" {
   tags = {
     ManagedBy = "Terraform"
   }
-}
+} */
 
 resource "aws_db_instance" "master_db" {
   allocated_storage    = 20

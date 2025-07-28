@@ -547,6 +547,38 @@ resource "helm_release" "cert_manager" {
   ]
 }
 
+resource "helm_release" "argo_cd" {
+  depends_on      = [helm_release.flannel_cni]
+  name            = "argo"
+  repository      = "https://argoproj.github.io/argo-helm"
+  chart           = "argo-cd"
+  cleanup_on_fail = true
+  atomic          = true
+
+  set = [
+    {
+      name  = "global.domain"
+      value = "argocd.${var.domain}"
+    },
+    {
+      name  = "configs.params.server\\.insecure"
+      value = true
+    },
+    {
+      name  = "server.ingress.enabled"
+      value = true
+    },
+    {
+      name  = "server.ingress.ingressClassName"
+      value = "nginx"    
+    },
+    {
+      name  = "server.ingress.enabled"
+      value = true    
+    }
+  ]
+}
+
 
 /*
 resource "helm_release" "keycloak_chart" {
